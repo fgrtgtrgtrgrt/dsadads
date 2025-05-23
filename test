@@ -1,0 +1,3350 @@
+function isExecutor()
+    local execName = getexecutorname()
+    local Executors = {
+        "Appleware",
+        "Fluxus",
+        "SynapseZ",
+        "Sentinel",
+        "Evon",
+        "jjsploit",
+        "Macsploit",
+        "Celery",
+        "Wave"
+    }
+
+    for _, name in ipairs(Executors) do
+        if string.match(execName, name) then
+            return true
+        end
+    end
+
+    return false
+end
+
+local Executor = isExecutor()
+local Solara = string.match(getexecutorname(), "Solara")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+if not LPH_OBFUSCATED then
+    getfenv().LPH_NO_VIRTUALIZE = function(f) return f end
+  end
+
+
+
+LPH_NO_VIRTUALIZE(function()
+	if hookmetamethod and Executor then
+        if getgenv().AC_BYPASS then
+            warn("Bypass is already applied. Exiting.")
+            return
+        end
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+        local Handshake = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CharacterSoundEvent")
+
+        local Hooks = {}
+        local HANDSHAKEARGUMENTS = nil
+        local ACSTRING = nil
+        local Step = 0
+        local CountIncrement = 0
+        local HandshakeNumbers = {}
+
+        Hooks.debug_info = hookfunction(debug.info, function(Level, Stuff)
+            if Level == 2 and Stuff == "s" then
+                return "LocalScript"
+            end
+            
+            return Hooks.debug_info(Level, Stuff)
+        end)
+
+        for i, v in next, getgc() do
+            if (type(v) == "function") then
+                local Script = debug.info(v, "s")
+                
+                if string.find(Script, "ReplicatedFirst.LocalScript") then
+                    setfenv(v, {})
+                    Step = Step + 1
+                    CountIncrement = CountIncrement + 1
+                end
+            end
+        end
+
+        for i, v in getgc() do
+            if typeof(v) == "function" and islclosure(v) then
+                if (#getprotos(v) == 1) and table.find(getconstants(getproto(v, 1)), 4000001) then
+                    hookfunction(v, function() end)
+                    Step = Step + 1
+                    CountIncrement = CountIncrement + 1
+                end
+            end
+        end
+            
+        for i, v in next, getgc(true) do
+            if type(v) == "table" then
+                if rawlen(v) == 19 and type(rawget(v, 19)) == "userdata" then
+                    Hooks.__call = hookfunction(getrawmetatable(v).__call, function(self, ...)
+                        local Args = {...}
+                        local HandshakeValues = {
+                            [1] = {660, 759, 751, 863, 771},
+                            [2] = {760, 760, 771, 665, 898},
+                            [3] = {655, 775, 724, 633, 891}
+                        }
+
+                        --[[local function tablesEqual(t1, t2)
+                            if #t1 ~= #t2 then
+                                return false
+                            end
+                            for i, v in pairs(t1) do
+                                if t2[i] ~= v then
+                                    return false
+                                end
+                            end
+                            return true
+                        end
+
+                        local function containsTable(t, tbls)
+                            for _, v in pairs(tbls) do
+                                if tablesEqual(t, v) then
+                                    return true
+                                end
+                            end
+                            return false
+                        end
+
+                        if containsTable(Args, HandshakeValues) then
+                            print("Whitelisted:", ...)
+                        else
+                            print("Blacklisted:", ...)
+                            return
+                        end--]]
+                        
+                        return Hooks.__call(self, ...)
+                    end)
+                end
+            end
+        end
+
+        getgenv().AC_BYPASS = true
+        print("Bypassed")
+    elseif Solara then
+        if getgenv().Solara_BYPASS then
+            warn("Solara Bypass is already applied. Exiting.")
+            return
+        end
+        
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local targets = {"FireServer", "RemoteFunction", "ReplicatedStorage", "FireClient"}
+        local scriptsToModify = {}
+        
+        local function containsTarget(scriptSource)
+            for _, target in ipairs(targets) do
+                if scriptSource:find(target) then
+                    return true
+                end
+            end
+            return false
+        end
+    
+        for _, instance in pairs(game:GetChildren()) do
+            if instance:IsA("LocalScript") and not instance:GetAttribute("Modified") then
+                local scriptSource = instance.Source
+                if containsTarget(scriptSource) then
+                    table.insert(scriptsToModify, instance)
+                    instance:SetAttribute("Modified", true)
+                end
+            end
+        end
+        
+    
+        local function modifyScripts()
+            while #scriptsToModify > 0 do
+                for i = 1, 5 do
+                    if #scriptsToModify == 0 then
+                        break 
+                    end
+                    local script = table.remove(scriptsToModify, 1)
+                    local success, err = pcall(function()
+                        script.Source = script.Source:gsub("FireServer|RemoteFunction|ReplicatedStorage", "print")
+                    end)
+                    if success then
+                        print("Modified script:", script.Name) 
+                    else
+                        warn("Failed to modify script: ", err)
+                    end
+                end
+                wait(0.1)
+            end
+            return true 
+        end
+        
+        if modifyScripts() then
+            print("All relevant scripts modified.")
+            getgenv().Solara_BYPASS = true
+        end
+        
+        print("Solara Bypass started")
+    else 
+        LocalPlayer:Kick("No Bypass for your executor")
+    end   
+        end)()    
+
+local Tyrant = {}
+
+local RS = game:GetService("RunService")
+local TS = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+local Mouse = game:GetService("Players").LocalPlayer:GetMouse()
+
+function createInstance(className, properties)
+	local instance = Instance.new(className)
+	for k, v in pairs(properties) do
+		if typeof(k) ~= 'string' then
+			continue
+		end
+
+		instance[k] = v
+	end
+	return instance
+end
+	
+local function CreateDrag(gui)
+	local dragging
+	local dragInput
+	local dragStart
+	local startPos
+
+	local function update(input)
+		local delta = input.Position - dragStart
+		TS:Create(gui, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}):Play();
+	end
+
+	local lastEnd = 0
+	local lastMoved = 0
+	local con
+	gui.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = gui.Position
+
+		end
+	end)
+
+	UIS.InputEnded:Connect(function(input)
+
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
+	end)
+
+
+	gui.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+			lastMoved = os.clock()
+		end
+	end)
+
+	UIS.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
+end
+
+-- // Instances
+
+local TyrantUI = Instance.new("ScreenGui", RS:IsStudio() and game.Players.LocalPlayer.PlayerGui or gethui())
+TyrantUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+function Tyrant:NewWindow()
+
+	local Window = {
+		CurrentTab = nil
+	}
+	
+
+	local Main = createInstance("Frame", {
+		Name = "Main",
+		Position = UDim2.fromScale(0.248, 0.220),
+		Size = UDim2.fromScale(0.350, 0.550),
+		Parent = TyrantUI,
+		BackgroundColor3 = Color3.fromRGB(5, 11, 19),
+		BorderSizePixel = 0,
+		ZIndex = 1
+	})
+
+	local Divider1 = createInstance("Frame", {
+		Name = "Divider1",
+		Position = UDim2.fromScale(0.311, 0.000),
+		Size = UDim2.new(0, 2, 1, 0),
+		Parent = Main,
+		BackgroundColor3 = Color3.fromRGB(22, 28, 36),
+		BorderSizePixel = 0,
+		ZIndex = 2
+	})
+
+	local Divider1_1 = createInstance("Frame", {
+		Name = "Divider1_1",
+		Position = UDim2.fromScale(0.311, 0.130),
+		Size = UDim2.new(.689, 0, 0, 2),
+		Parent = Main,
+		BackgroundColor3 = Color3.fromRGB(22, 28, 36),
+		BorderSizePixel = 0,
+		ZIndex = 2
+	})
+
+	local TabHolder = createInstance("ScrollingFrame", {
+		Name = "TabHolder",
+		Position = UDim2.fromScale(0.000, 0.200),
+		Size = UDim2.fromScale(0.311, 0.800),
+		Parent = Main,
+		BackgroundTransparency = 1,
+		ScrollBarThickness = 0,
+		ClipsDescendants = true,
+		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+		BorderSizePixel = 0,
+		ZIndex = 3
+	})
+	
+	local Title = createInstance("TextLabel", {
+		Name = "Title",
+		Position = UDim2.fromScale(0.029, 0.030),
+		Size = UDim2.fromScale(0.250, 0.100),
+		Parent = Main,
+		BackgroundTransparency = 1,
+		Font = Enum.Font.Unknown,
+		Text = '<font color="#44bcc7">Nexus</font>.cc',
+		TextScaled = true,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		TextYAlignment = Enum.TextYAlignment.Center,
+		RichText = true,
+		TextWrapped = true,
+		TextColor3 = Color3.fromRGB(255, 255, 255),
+		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+		TextSize = 14,
+		BorderSizePixel = 0,
+		ZIndex = 4
+	})
+
+	local TabLayout = createInstance("UIListLayout", {
+		Parent = TabHolder,
+		Padding = UDim.new(0, 5),
+		FillDirection = Enum.FillDirection.Vertical,
+		HorizontalAlignment = Enum.HorizontalAlignment.Center,
+		VerticalAlignment = Enum.VerticalAlignment.Top,
+		SortOrder = Enum.SortOrder.LayoutOrder
+	})
+	
+	local MainCorner = createInstance("UICorner", {
+		Parent = Main
+	})
+
+	local MainConstraint = createInstance("UIAspectRatioConstraint", {
+		AspectRatio = 1.251,
+		Parent = Main
+	})
+	
+	CreateDrag(Main)
+	
+	function Window:Tab(Title: string, ImageID: string)
+		
+		local tab = {}
+		
+		local Tab = createInstance("ImageButton", {
+			Name = "Tab",
+			Position = UDim2.fromScale(0.000, 0.000),
+			Size = UDim2.fromScale(0.800, 0.040),
+			Parent = TabHolder,
+			BackgroundTransparency = 1,
+			AutoButtonColor = false,
+			BackgroundColor3 = Color3.fromRGB(75, 73, 106),
+			BorderSizePixel = 0,
+			ZIndex = 1
+		})
+
+		local TabCorner = createInstance("UICorner", {
+			Parent = Tab,
+			CornerRadius = UDim.new(0, 6)
+		})
+
+		local TabTitle = createInstance("TextLabel", {
+			Name = "TabTitle",
+			Position = UDim2.fromScale(0.300, 0.500),
+			Size = UDim2.fromScale(0.700, 0.600),
+			Parent = Tab,
+			BackgroundTransparency = 1,
+			AnchorPoint = Vector2.new(0, 0.5),
+			Font = Enum.Font.SourceSans,
+			Text = Title or "Tab",
+			TextScaled = true,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Center,
+			TextWrapped = true,
+			TextColor3 = Color3.fromRGB(153, 153, 153),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			TextSize = 14,
+			BorderSizePixel = 0,
+			ZIndex = 1
+		})
+
+		local Icon = createInstance("ImageLabel", {
+			Name = "Icon",
+			Position = UDim2.fromScale(0.044, 0.200),
+			Size = UDim2.fromScale(0.600, 0.600),
+			Parent = Tab,
+			BackgroundTransparency = 1,
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			ImageColor3 = Color3.fromRGB(153, 153, 153),
+			Image = "rbxassetid://"..ImageID,
+			BorderSizePixel = 0,
+			ZIndex = 1
+		})
+
+		local IconConstraint = createInstance("UIAspectRatioConstraint", {
+			AspectRatio = 1.000,
+			Parent = Icon
+		})
+
+		local Canvas = createInstance("ScrollingFrame", {
+			Name = "Canvas",
+			Position = UDim2.fromScale(0.311, 0.150),
+			Size = UDim2.fromScale(0.689, 0.850),
+			Parent = Main,
+			BackgroundTransparency = 1,
+			ScrollBarThickness = 0,
+			ClipsDescendants = true,
+			Visible	= false,
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			AutomaticCanvasSize = Enum.AutomaticSize.Y,
+			BorderSizePixel = 0,
+			ZIndex = 1
+		})
+		
+		local CanvasLayout = createInstance("UIListLayout", {
+			Parent = Canvas,
+			Padding = UDim.new(0, 10),
+			FillDirection = Enum.FillDirection.Vertical,
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			VerticalAlignment = Enum.VerticalAlignment.Top,
+			SortOrder = Enum.SortOrder.LayoutOrder
+		})
+
+		local CanvasPad = createInstance("UIPadding", {
+			Parent = Canvas,
+			PaddingTop = UDim.new(0, 5)
+		})
+		
+		local Path = createInstance("TextLabel", {
+			Name = "Path",
+			Position = UDim2.fromScale(0.350, 0.045),
+			Size = UDim2.fromScale(0.7, 0.055),
+			Parent = Main,
+			BackgroundTransparency = 1,
+			Font = Enum.Font.SourceSans,
+			Text = 'Nexus / FF2 / <font color="#ffffff">'..Title..'</font>',
+			TextScaled = true,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Center,
+			RichText = true,
+			TextWrapped = true,
+			Visible = false,
+			TextColor3 = Color3.fromRGB(255,255,255),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			TextSize = 14,
+			BorderSizePixel = 0,
+			ZIndex = 1
+		})
+		
+		function tab:Activate()
+			if Window.CurrentTab ~= nil then
+				Window.CurrentTab:Deactivate()
+			end
+			Window.CurrentTab = tab
+			TS:Create(Tab, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {BackgroundTransparency =.5}):Play()
+			TS:Create(TabTitle, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {TextColor3 = Color3.fromRGB(68, 188, 199)}):Play()
+			TS:Create(Icon, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {ImageColor3 = Color3.fromRGB(68, 188, 199)}):Play()
+			Path.Visible = true
+			Canvas.Visible = true
+		end
+		
+		function tab:Deactivate()
+			TS:Create(Tab, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {BackgroundTransparency =1}):Play()
+			TS:Create(TabTitle, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {TextColor3 = Color3.fromRGB(153, 153, 153)}):Play()
+			TS:Create(Icon, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {ImageColor3 = Color3.fromRGB(153, 153, 153)}):Play()
+			Path.Visible = false
+			Canvas.Visible = false
+		end
+		
+		Tab.MouseButton1Down:Connect(function()
+			tab:Activate()
+		end)
+		
+		if Window.CurrentTab == nil then
+			tab:Activate()
+		end
+		
+		function tab:Toggle(Title: string, Options: table)
+			
+			local Settings = {
+				Title 	 = Title or "Toggle",
+				Value	 = Options.Default or false,
+				Default  = Options.Default or false,
+				Callback = Options.Callback or function() end
+			}
+			
+			local Toggle = createInstance("ImageButton", {
+				Name = "Toggle",
+				Position = UDim2.fromScale(0.000, 0.000),
+				Size = UDim2.fromScale(0.900, 0.10),
+				Parent = Canvas,
+				BackgroundTransparency = 0.8999999761581421,
+				BackgroundColor3 = Color3.fromRGB(68, 188, 199),
+				BorderSizePixel = 0,
+				ZIndex = 1,
+				AutoButtonColor = false
+			})
+
+			local ToggleCorner_12 = createInstance("UICorner", {
+				Parent = Toggle,
+				CornerRadius = UDim.new(0, 6)
+			})
+
+			local ToggleStroke_13 = createInstance("UIStroke", {
+				Parent = Toggle,
+				Color = Color3.fromRGB(68, 188, 199),
+				Thickness = 1,
+				Transparency = 0.5
+			})
+
+			local ToggleTitle_14 = createInstance("TextLabel", {
+				Name = "ToggleTitle_14",
+				Position = UDim2.fromScale(0.030, 0.500),
+				Size = UDim2.fromScale(.9, 0.500),
+				Parent = Toggle,
+				BackgroundTransparency = 1,
+				AnchorPoint = Vector2.new(0, 0.5),
+				Font = Enum.Font.SourceSans,
+				Text = Settings.Title,
+				TextScaled = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextWrapped = true,
+				TextColor3 = Color3.fromRGB(188, 188, 188),
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+				TextSize = 14,
+				BorderSizePixel = 0,
+				ZIndex = 1
+			})
+
+			local Switch_15 = createInstance("Frame", {
+				Name = "Switch_15",
+				Position = UDim2.fromScale(0.850, 0.500),
+				Size = UDim2.fromScale(0.100, 0.300),
+				Parent = Toggle,
+				AnchorPoint = Vector2.new(0, 0.5),
+				BackgroundColor3 = Color3.fromRGB(56, 56, 56),
+				BorderSizePixel = 0,
+				ZIndex = 1
+			})
+
+			local SwitchCorner_16 = createInstance("UICorner", {
+				Parent = Switch_15,
+				CornerRadius = UDim.new(1, 0)
+			})
+
+			local Knob_17 = createInstance("Frame", {
+				Name = "Knob_17",
+				Position = UDim2.fromScale(-0.150, 0.500),
+				Size = UDim2.fromScale(1.100, 1.500),
+				Parent = Switch_15,
+				AnchorPoint = Vector2.new(0, 0.5),
+				BackgroundColor3 = Color3.fromRGB(171, 171, 171),
+				BorderSizePixel = 0,
+				ZIndex = 1
+			})
+
+			local KnobConstraint_18 = createInstance("UIAspectRatioConstraint", {
+				AspectRatio = 1.000,
+				Parent = Knob_17
+			})
+
+			local KnobCorner_19 = createInstance("UICorner", {
+				Parent = Knob_17,
+				CornerRadius = UDim.new(1, 0)
+			})
+			
+			function Settings:Toggle(v)
+				if v ~= nil then
+					Settings.Callback(v)
+				else
+					Settings.Value = not Settings.Value
+					Settings.Callback(Settings.Value)
+				end
+				
+				if Settings.Value then
+					TS:Create(Switch_15, TweenInfo.new(0.1, Enum.EasingStyle.Sine), {BackgroundColor3 = Color3.fromRGB(16, 125, 135)}):Play()
+					TS:Create(Knob_17, TweenInfo.new(0.1, Enum.EasingStyle.Sine), {BackgroundColor3 = Color3.fromRGB(68, 188, 199)}):Play()
+					TS:Create(Knob_17, TweenInfo.new(0.1, Enum.EasingStyle.Sine), {Position = UDim2.fromScale(0.550, 0.500)}):Play()
+				else
+					TS:Create(Switch_15, TweenInfo.new(0.1, Enum.EasingStyle.Sine), {BackgroundColor3 = Color3.fromRGB(56, 56, 56)}):Play()
+					TS:Create(Knob_17, TweenInfo.new(0.1, Enum.EasingStyle.Sine), {BackgroundColor3 = Color3.fromRGB(171, 171, 171)}):Play()
+					TS:Create(Knob_17, TweenInfo.new(0.1, Enum.EasingStyle.Sine), {Position = UDim2.fromScale(-0.150, 0.500)}):Play()
+				end
+			end
+			
+			Settings:Toggle(Settings.Default)
+			
+			Toggle.MouseButton1Down:Connect(function()
+				Settings:Toggle()
+			end)
+			
+			return Settings
+		end
+		
+		function tab:Slider(Title: string, Options: table)
+			
+			local Settings = {
+				Title	    = Title or "Slider",
+				Default	    = Options.Default or 0,
+				Value		= Options.Default,
+				Min 	    = Options.Min or 0,
+				Max		    = Options.Max or 100,
+				Callback    = Options.Callback or function() end,
+				Connections = {}
+			}
+			
+			local Slider = createInstance("ImageButton", {
+				Name = "Slider",
+				Position = UDim2.new(0.000, 0.000, 0.000, 0.000),
+				Size = UDim2.new(0.900, 0.000, 0.15, 0.000),
+				Parent = Canvas,
+				BackgroundTransparency = 0.8999999761581421,
+				BackgroundColor3 = Color3.fromRGB(68, 188, 199),
+				BorderSizePixel = 0,
+				ZIndex = 1,
+				AutoButtonColor = false
+			})
+
+			local SliderCorner = createInstance("UICorner", {
+				Parent = Slider,
+				CornerRadius = UDim.new(0, 6)
+			})
+
+			local SliderStroke = createInstance("UIStroke", {
+				Parent = Slider,
+				Color = Color3.fromRGB(68, 188, 199),
+				Thickness = 1,
+				Transparency = 0.5
+			})
+
+			local SliderAmount = createInstance("TextBox", {
+				Name = "SliderAmount",
+				Position = UDim2.new(0.880, 0.000, 0.300, 0.000),
+				Size = UDim2.new(0.100, 0.000, 0.350, 0.000),
+				Parent = Slider,
+				BackgroundTransparency = 1,
+				AnchorPoint = Vector2.new(0, 0.5),
+				Font = Enum.Font.SourceSans,
+				Text = Settings.Default,
+				TextScaled = true,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextWrapped = true,
+				TextColor3 = Color3.fromRGB(188, 188, 188),
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+				TextSize = 14,
+				BorderSizePixel = 0,
+				ZIndex = 1
+			})
+
+			local SliderTitle = createInstance("TextLabel", {
+				Name = "SliderTitle",
+				Position = UDim2.new(0.030, 0.000, 0.300, 0.000),
+				Size = UDim2.new(0.900, 0.000, 0.350, 0.000),
+				Parent = Slider,
+				BackgroundTransparency = 1,
+				AnchorPoint = Vector2.new(0, 0.5),
+				Font = Enum.Font.SourceSans,
+				Text = Settings.Title,
+				TextScaled = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextWrapped = true,
+				TextColor3 = Color3.fromRGB(188, 188, 188),
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+				TextSize = 14,
+				BorderSizePixel = 0,
+				ZIndex = 1
+			})
+
+			local SliderBack = createInstance("Frame", {
+				Name = "SliderBack",
+				Position = UDim2.new(0.500, 0.000, 0.700, 0.000),
+				Size = UDim2.new(0.930, 0.000, 0.000, 4.000),
+				Parent = Slider,
+				AnchorPoint = Vector2.new(0.5, 0),
+				BackgroundColor3 = Color3.fromRGB(16, 125, 135),
+				BorderSizePixel = 0,
+				ZIndex = 1
+			})
+
+			local BackCorner = createInstance("UICorner", {
+				Parent = SliderBack,
+				CornerRadius = UDim.new(1, 0)
+			})
+
+			local SliderMain = createInstance("Frame", {
+				Name = "SliderMain",
+				Position = UDim2.new(0.000, 0.000, 0.000, 0.000),
+				Size = UDim2.new(0.431, 0.000, 0.000, 4.000),
+				Parent = SliderBack,
+				BackgroundColor3 = Color3.fromRGB(68, 188, 199),
+				BorderSizePixel = 0,
+				ZIndex = 1
+			})
+
+			local SMCorner = createInstance("UICorner", {
+				Parent = SliderMain,
+				CornerRadius = UDim.new(1, 0)
+			})
+
+			Settings.Callback(Settings.Value)
+
+			-- // Functions
+
+			function Settings:GetValue()
+				return tonumber(SliderAmount.Text)
+			end
+
+			function Settings:SetValue(v)
+				if not v then
+
+					local percent   = math.clamp((Mouse.X - SliderBack.AbsolutePosition.X) / (SliderBack.AbsoluteSize.X), 0, 1)
+					local Value   	= ((Settings.Max - Settings.Min) * percent) + Settings.Min
+
+					SliderMain.Size = UDim2.fromScale(percent, 1)
+					SliderAmount.Text  = tonumber(Value % 1 == 0 and string.format("%.0f", Value) or string.format("%.1f", Value))
+
+				else
+
+					SliderAmount.Text  = tonumber(v % 1 == 0 and string.format("%.0f", v) or string.format("%.1f", v))
+					TS:Create(SliderMain, TweenInfo.new(.15, Enum.EasingStyle.Sine), {Size = UDim2.fromScale((v - Settings.Min) / (Settings.Max - Settings.Min), 1)}):Play()
+
+				end
+				Settings.Callback(Settings:GetValue())
+				Settings.Value = SliderAmount.Text
+			end
+
+
+			-- // Input Listener
+
+			SliderAmount.FocusLost:Connect(function()
+				Settings:SetValue(math.clamp(SliderAmount.Text, Settings.Min, Settings.Max))
+			end)
+
+			table.insert(Settings.Connections, UIS.InputEnded:Connect(function(input, gpe)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					if Connection then
+						Connection:Disconnect()
+						Connection = nil
+					end
+				end
+			end))
+
+			table.insert(Settings.Connections, Slider.MouseButton1Down:Connect(function()
+				if Connection then Connection:Disconnect() end
+
+				Connection = RS.Heartbeat:Connect(function()
+					Settings:SetValue()
+				end)
+			end))
+			
+			return Settings
+		end
+		
+		function tab:Dropdown(Title: string, Options: table)
+			
+			local Settings = {
+				Title 	 = Title or "Dropdown",
+				Default  = Options.Default or "None",
+				Options  = Options.Options or {},
+				Callback = Options.Callback or function() end
+			}
+			
+
+			local Dropdown = createInstance("ImageButton", {
+				Name = "Dropdown",
+				Position = UDim2.new(0.000, 0.000, 0.000, 0.000),
+				Size = UDim2.fromScale(0.900, 0.10),
+				Parent = Canvas,
+				BackgroundTransparency =  0.8999999761581421,
+				BackgroundColor3 = Color3.fromRGB(68, 188, 199),
+				BorderSizePixel = 0,
+				AutoButtonColor = false,
+				ZIndex = 20
+			})
+
+			local DropdownCorner = createInstance("UICorner", {
+				Parent = Dropdown,
+				CornerRadius = UDim.new(0, 6)
+			})
+
+			local DropdownStroke = createInstance("UIStroke", {
+				Parent = Dropdown,
+				Color = Color3.fromRGB(68, 188, 199),
+				Thickness = 1,
+				Transparency = 0.5
+			})
+
+			local DropdownTitle = createInstance("TextLabel", {
+				Name = "DropdownTitle",
+				Position = UDim2.new(0.030, 0.000, 0.500, 0.000),
+				Size = UDim2.new(0.000, 200.000, 0.500, 0.000),
+				Parent = Dropdown,
+				BackgroundTransparency = 1,
+				AnchorPoint = Vector2.new(0, 0.5),
+				Font = Enum.Font.SourceSans,
+				Text = Settings.Title,
+				TextScaled = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextWrapped = true,
+				TextColor3 = Color3.fromRGB(188, 188, 188),
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+				TextSize = 14,
+				BorderSizePixel = 0,
+				ZIndex = 1
+			})
+
+			local Selected = createInstance("Frame", {
+				Name = "Selected",
+				Position = UDim2.new(0.950, 0.000, 0.500, 0.000),
+				Size = UDim2.new(0.100, 0.000, 0.500, 0.000),
+				Parent = Dropdown,
+				BackgroundTransparency = 0.5,
+				AnchorPoint = Vector2.new(1, 0.5),
+				AutomaticSize = Enum.AutomaticSize.X,
+				BackgroundColor3 = Color3.fromRGB(0,0,0),
+				BorderSizePixel = 0,
+				ZIndex = 1
+			})
+
+			local SelectedCorner = createInstance("UICorner", {
+				Parent = Selected,
+				CornerRadius = UDim.new(0, 6)
+			})
+
+			local SelectedText = createInstance("TextLabel", {
+				Name = "SelectedText",
+				Position = UDim2.new(0.000, 0.000, 0.500, 0.000),
+				Size = UDim2.new(1.000, 0.000, 1.000, 0.000),
+				Parent = Selected,
+				BackgroundTransparency = 1,
+				AnchorPoint = Vector2.new(0, 0.5),
+				Font = Enum.Font.SourceSans,
+				Text = Settings.Default,
+				AutomaticSize = Enum.AutomaticSize.X,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextWrapped = true,
+				TextColor3 = Color3.fromRGB(188, 188, 188),
+				BackgroundColor3 = Color3.fromRGB(0,0,0),
+				TextSize = 14,
+				BorderSizePixel = 0,
+				ZIndex = 1
+			})
+
+			local SelectedPad = createInstance("UIPadding", {
+				Parent = Selected,
+				PaddingLeft = UDim.new(0, 10),
+				PaddingRight = UDim.new(0, 10)
+			})
+
+			local OptionHolder = createInstance("Frame", {
+				Name = "OptionHolder",
+				Position = UDim2.new(0.950, 0.000, 0.900, 0.000),
+				Size = UDim2.new(0.100, 0.000, 0.000, 0.000),
+				Parent = Dropdown,
+				AnchorPoint = Vector2.new(1, 0),
+				AutomaticSize = Enum.AutomaticSize.XY,
+				BackgroundColor3 = Color3.fromRGB(0,0,0),
+				BorderSizePixel = 0,
+				Visible = false,
+				ZIndex = 1
+			})
+
+			local OptionLayout = createInstance("UIListLayout", {
+				Parent = OptionHolder,
+				FillDirection = Enum.FillDirection.Vertical,
+				HorizontalAlignment = Enum.HorizontalAlignment.Center,
+				VerticalAlignment = Enum.VerticalAlignment.Top,
+				SortOrder = Enum.SortOrder.LayoutOrder
+			})
+
+			local OptionPad = createInstance("UIPadding", {
+				Parent = OptionHolder,
+				PaddingBottom = UDim.new(0, 5),
+				PaddingTop = UDim.new(0, 5),
+				PaddingLeft = UDim.new(0, 10),
+				PaddingRight = UDim.new(0, 10)
+			})
+
+			local OptionsCorner = createInstance("UICorner", {
+				Parent = OptionHolder,
+				CornerRadius = UDim.new(0, 6)
+			})
+
+			local DropdownStroke_1 = createInstance("UIStroke", {
+				Parent = OptionHolder,
+				Color = Color3.fromRGB(68, 188, 199),
+				Thickness = 1,
+				Transparency = 0.5
+			})
+			
+			Dropdown.MouseButton1Down:Connect(function()
+				OptionHolder.Visible = not OptionHolder.Visible
+			end)
+
+			table.foreach(Settings.Options, function(i, v)
+				
+				local Option = createInstance("TextButton", {
+					Name = "Option",
+					Position = UDim2.new(0.000, 0.000, 0.500, 0.000),
+					Size = UDim2.new(0.195, 0.000, 0.000, 20.000),
+					Parent = OptionHolder,
+					BackgroundTransparency = 1,
+					AnchorPoint = Vector2.new(0, 0.5),
+					Font = Enum.Font.SourceSans,
+					Text = v,
+					AutomaticSize = Enum.AutomaticSize.X,
+					TextXAlignment = Enum.TextXAlignment.Center,
+					TextYAlignment = Enum.TextYAlignment.Center,
+					TextWrapped = true,
+					TextColor3 = Color3.fromRGB(188, 188, 188),
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					AutoButtonColor = false,
+					TextSize = 14,
+					BorderSizePixel = 0,
+					ZIndex = 21
+				})
+				
+				Option.MouseButton1Down:Connect(function()
+					SelectedText.Text = Option.Text
+					OptionHolder.Visible = false
+					Settings.Callback(Option.Text)
+				end)
+				
+			end)
+			
+			return Settings
+		end
+		
+		return tab
+	end
+	
+	return Window
+end
+Lib = Tyrant:NewWindow()
+local t1 = Lib:Tab("Catching", 10723426986)
+local t2 = Lib:Tab("Visuals", 10723426986)
+local t3 = Lib:Tab("Throwing", 10723426986)
+local t4 = Lib:Tab("Automatics", 10723426986)
+local t6 = Lib:Tab("Kicker", 10723426986)
+local t5 = Lib:Tab("Player", 10723426986)
+
+
+
+local MagPower = 1
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+local FakeCatchRight = Instance.new("Part")
+local FakeCatchLeft = Instance.new("Part")
+
+FakeCatchRight.Name = "FakeCatchRight"
+FakeCatchLeft.Name = "FakeCatchLeft"
+FakeCatchRight.Size = Vector3.new(1, 1, 1)
+FakeCatchLeft.Size = Vector3.new(1, 1, 1)
+FakeCatchLeft.Transparency = 1
+FakeCatchRight.Transparency = 1
+FakeCatchLeft.CanCollide = false
+FakeCatchRight.CanCollide = false
+FakeCatchRight.Anchored = true
+FakeCatchLeft.Anchored = true
+FakeCatchRight.Parent = Workspace
+FakeCatchLeft.Parent = Workspace
+
+
+
+local catchDelay = 0
+local MagnetMultiplier = 3
+local MagMaxForce = 4000
+local MagnetPosition = 1000
+local ballInPlay = false  -- Track if the ball has been hiked
+local currentBodyPosition = nil  -- Track active BodyPosition
+
+local function OnHike(football)
+    ballInPlay = true
+
+    -- Ensure we're working with a valid football
+    if football and football:IsA("BasePart") then
+        football.CanCollide = false
+
+        -- Create BodyPosition
+        local bodyPosition = Instance.new("BodyPosition")
+        bodyPosition.MaxForce = Vector3.new(MagMaxForce, MagMaxForce, MagMaxForce)
+        bodyPosition.P = MagnetPosition
+        bodyPosition.Parent = football
+        currentBodyPosition = bodyPosition  -- Store reference for later removal
+    end
+end
+
+
+local function ResetPlay()
+    ballInPlay = false
+
+   
+    if currentBodyPosition then
+        currentBodyPosition:Destroy()
+        currentBodyPosition = nil
+    end
+end
+
+
+local function StartMagnet()
+    if not Character then return end
+
+    local CatchRight = Character:FindFirstChild("CatchRight") or FakeCatchRight
+    local CatchLeft = Character:FindFirstChild("CatchLeft") or FakeCatchLeft
+
+    Workspace.ChildAdded:Connect(function(v)
+        if v:IsA("BasePart") and v.Name == "Football" then
+            v.CanCollide = false
+            v.Size = Vector3.new(MagPower, MagPower, MagPower)
+        
+
+            local bodyPosition = Instance.new("BodyPosition")
+            bodyPosition.MaxForce = Vector3.new(MagMaxForce, MagMaxForce, MagMaxForce)
+            bodyPosition.P = MagnetPositon
+            bodyPosition.Parent = v
+
+            local distance = (Character.HumanoidRootPart.Position - v.Position).Magnitude
+            if distance <= MagPower then
+                wait(catchDelay)
+                bodyPosition.Position = CatchRight.Position + (CatchRight.Position - v.Position).unit * MagnetMultiplier
+                wait()
+                bodyPosition.Position = CatchLeft.Position + (CatchLeft.Position - v.Position).unit * MagnetMultiplier
+            end
+            wait(0.5)
+            bodyPosition:Destroy()
+        end
+    end)
+end
+
+
+local function StopMagnet()
+    if MagsActive == false then
+     bodyPosition:Destroy() 
+    end
+ end
+
+    local function ShowHitbox()
+	for _, v in pairs(Workspace:GetChildren()) do
+		if v:IsA("BasePart") and v.Name == "Football" then
+			local existingHitbox = v:FindFirstChild("Hitbox")
+			if existingHitbox then
+				existingHitbox.CanCollide = false
+				existingHitbox.Anchored = false
+				existingHitbox.Size = v.Size / 2
+				existingHitbox.Position = v.Position
+			else
+				local Hitbox = Instance.new("Part")
+				Hitbox.Name = "Hitbox"
+				Hitbox.CanCollide = false
+				Hitbox.Anchored = false
+				Hitbox.BrickColor = BrickColor.new("Green")
+				Hitbox.Material = Enum.Material.SmoothPlastic
+				Hitbox.Size = v.Size / 2
+				Hitbox.Position = v.Position
+				Hitbox.Transparency = 0.5
+				Hitbox.Parent = v
+			end
+		end
+	end
+end
+
+local hitboxConnection
+
+
+
+
+t1:Slider("Magnet Range", {
+    Default = 0,
+    Min = 0,
+    Max = 50,
+    Callback = function(value)
+		MagPower = value
+		if MagPower > 1 then
+			StartMagnet()
+		else
+			StopMagnet()
+		end
+    end,
+})
+
+t1:Slider("Multiplier", {
+    Default = 3,
+    Min = 3,
+    Max = 5,
+    Callback = function(value)
+      MagnetMultiplier = value
+    end,
+})
+
+t1:Slider("Max Force", {
+    Default = 4000,
+    Min = 4000,
+    Max = 10000,
+    Callback = function(value)
+        MagMaxForce = value
+    end,
+})
+
+t1:Slider("Position", {
+    Default = 1000,
+    Min = 1000,
+    Max = 4000,
+    Callback = function(value)
+        MagnetPositon = value
+    end,
+})
+
+t1:Slider("Catch Delay", {
+    Default = 0,
+    Min = 0,
+    Max = 5,
+    Callback = function(value)
+        catchDelay = value
+    end,
+})
+
+t2:Toggle("Show Hitbox", {
+	Callback = function(value)
+if value then 
+                    hitboxConnection = RunService.RenderStepped:Connect(ShowHitbox)
+                else
+                    if hitboxConnection then
+                        hitboxConnection:Disconnect()
+                        hitboxConnection = nil
+                    end
+                end
+	end,
+})
+
+local jps = 50
+local jumpPowerEnabled = false
+local connection
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+local char = lp.Character
+
+lp.CharacterAdded:Connect(function(character)
+	char = character
+end)
+
+local function onToggle(Value)
+	jumpPowerEnabled = Value
+	if jumpPowerEnabled then
+		connection = RunService.RenderStepped:Connect(function()
+			local upWard = Vector3.new(0, 10, 0)
+			local hrp = char and char:FindFirstChild("HumanoidRootPart")
+			local hum = char and char:FindFirstChild("Humanoid")
+			local newJPS = (jps / 10)
+			if hrp and hum and hum.FloorMaterial == Enum.Material.Grass and hum.Jump then
+				hrp.Velocity = upWard * newJPS
+			end
+		end)
+	else
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+	end
+end
+
+t5:Slider("JumpPower", {
+    Default = 50,
+    Min = 0,
+    Max = 60,
+    Callback = function(value)
+        local jpOnDude = true
+                jps = value
+                onToggle(jpOnDude)
+    end,
+})
+
+t2:Toggle("Ball Prediction", {
+    Callback = function(value)
+        if value then
+            FootballLandingPredictions = true
+
+            local function beamProjectile(g, v0, x0, t1)
+                local c = 0.5 * 0.5 * 0.5
+                local p3 = 0.5 * g * t1 * t1 + v0 * t1 + x0
+                local p2 = p3 - (g * t1 * t1 + v0 * t1) / 3
+                local p1 = (c * g * t1 * t1 + 0.5 * v0 * t1 + x0 - c * (x0 + p3)) / (3 * c) - p2
+                
+                local curve0 = (p1 - x0).magnitude
+                local curve1 = (p2 - p3).magnitude
+                
+                local b = (x0 - p3).unit
+                local r1 = (p1 - x0).unit
+                local u1 = r1:Cross(b).unit
+                local r2 = (p2 - p3).unit
+                local u2 = r2:Cross(b).unit
+                b = u1:Cross(r1).unit
+
+                local cf1 = CFrame.new(
+                    x0.x, x0.y, x0.z,
+                    r1.x, u1.x, b.x,
+                    r1.y, u1.y, b.y,
+                    r1.z, u1.z, b.z
+                )
+
+                local cf2 = CFrame.new(
+                    p3.x, p3.y, p3.z,
+                    r2.x, u2.x, b.x,
+                    r2.y, u2.y, b.y,
+                    r2.z, u2.z, b.z
+                )
+
+                return curve0, -curve1, cf1, cf2
+            end
+            
+            local predictionColor = Color3.fromRGB(62, 134, 222)
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local RunService = game:GetService("RunService")
+            local eventConnection
+            
+            eventConnection = workspace.ChildAdded:Connect(function(b)
+                if b.Name == "Football" and b:IsA("BasePart") then
+                    task.wait()
+
+                    local vel = b.Velocity
+                    local pos = b.Position
+                    local c0, c1, cf1, cf2 = beamProjectile(Vector3.new(0, -28, 0), vel, pos, 10)
+                    
+                    local beam = Instance.new("Beam")
+                    local a0 = Instance.new("Attachment")
+                    local a1 = Instance.new("Attachment")
+                    
+                    beam.Color = ColorSequence.new(predictionColor)
+                    beam.Transparency = NumberSequence.new(0, 0)
+                    beam.CurveSize0 = c0
+                    beam.CurveSize1 = c1
+                    beam.Name = "Hitbox"
+                    beam.Parent = workspace.Terrain
+                    
+                    beam.Transparency = NumberSequence.new({
+                        NumberSequenceKeypoint.new(0, 1),
+                        NumberSequenceKeypoint.new(0.01, 0),
+                        NumberSequenceKeypoint.new(1, 0),
+                        NumberSequenceKeypoint.new(1, 0.01),
+                    })
+                    
+                    beam.Segments = 1750
+                    a0.Parent = workspace.Terrain
+                    a1.Parent = workspace.Terrain
+                    a0.CFrame = a0.Parent.CFrame:Inverse() * cf1
+                    a1.CFrame = a1.Parent.CFrame:Inverse() * cf2
+                    beam.Attachment0 = a0
+                    beam.Attachment1 = a1
+                    beam.Width0 = 1
+                    beam.Width1 = 1
+
+                    local landedConnection
+                    landedConnection = RunService.Heartbeat:Connect(function()
+                        if b.Velocity.magnitude < 1 then  
+                            beam:Destroy()
+                            a0:Destroy()
+                            a1:Destroy()
+                            landedConnection:Disconnect()
+                        end
+                    end)
+
+                    repeat task.wait() until b.Parent ~= workspace
+                    beam:Destroy()
+                    a0:Destroy()
+                    a1:Destroy()
+                end
+            end)
+
+        else
+            FootballLandingPredictions = false
+            if eventConnection then
+                eventConnection:Disconnect()
+            end
+        end
+    end,
+})
+
+t4:Toggle("Anti Admin", {
+    Default = false,
+    Callback = function(value)
+        if value then
+            local moderators = {
+            "2618937233503944727",
+            "209187780079648778",
+            "265544447129812992",
+            "677964655821324329",
+            "469043698110562304",
+            "792145568586792979",
+            "490537796940070915",
+            "678699048844132362",
+            "837514415480897607",
+            "417141199564963840",
+            "580140563295109148",
+            "231225289718497281",
+            "719258236930228346",
+            "345362950380322829",
+            "513196564236468226",
+            "241945212463742986",
+            "153379470164623360",
+            "1170439264"
+        }
+
+            for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+                if table.find(moderators, tostring(player.UserId)) then
+                    game:GetService("Players").LocalPlayer:Kick("An Admin has joined! Make sure to keep this enabled for extra caution next time!")
+                end
+            end
+        end
+    end,
+})
+
+
+t4:Toggle("Anti Jam", {
+    Default = false,
+    Callback = function(value)
+        if value then
+            local player = game:GetService("Players").LocalPlayer
+            local rs = game:GetService("RunService")
+
+            local function disableTackling()
+                rs.Stepped:Connect(function()
+                    if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        for _, part in pairs(player.Character:GetChildren()) do
+                            if part:IsA("BasePart") then
+                                part.CanCollide = true
+                            end
+                        end
+                    end
+                end)
+            end
+
+            disableTackling()
+        end
+        end,
+    })
+
+t5:Toggle("NoClip", {
+    Default = false,
+    Callback = function(value)
+        if value == true then
+            local player = game:GetService("Players").LocalPlayer
+            local rs = game:GetService("RunService")
+
+            local function EnableTackling()
+                rs.Stepped:Connect(function()
+                    if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        for _, part in pairs(player.Character:GetChildren()) do
+                            if part:IsA("BasePart") then
+                                part.CanCollide = false
+                            end
+                        end
+                    end
+                end)
+            end
+
+            EnableTackling()
+        end
+        end,
+})
+
+local player = game:GetService("Players").LocalPlayer
+local messageLabel = player.PlayerGui.MainGui.Message
+
+local function AutoReset()
+    if player.Character then
+        player.Character:BreakJoints()
+    end 
+    end
+
+    local function checkMessageForReset(newMessage)
+        if string.match(newMessage, "yard gain$") or string.match(newMessage, "yard loss$") or string.match(newMessage, "Yard Touchdown!$") or string.match(newMessage, "INTERCEPTION$") or string.match(newMessage, "Incomplete$") or string.match(newMessage, "Illegal Touch$") then
+            wait(1)
+            AutoReset()
+        end
+    end
+
+t4:Toggle("Auto Reset", {
+    Default = false,
+    Callback = function(value)
+        if value then
+            if not messageConnection then
+                messageConnection = messageLabel:GetPropertyChangedSignal("Text"):Connect(function()
+                    local newMessage = messageLabel.Text
+                    checkMessageForReset(newMessage)
+                end)
+            end
+        else
+            if messageConnection then
+                messageConnection:Disconnect()
+                messageConnection = nil
+            end
+        end
+    end,
+})
+
+t3:Toggle("Qb Aimbot", {
+    Default = false,
+    Callback = function(t)
+        local ScreenGui = Instance.new("ScreenGui")
+        local ThrowFrame = Instance.new("Frame")
+        local JustAText = Instance.new("TextLabel")
+        local UICorner = Instance.new("UICorner")
+        local ThrowType_2 = Instance.new("TextLabel")
+        local KeyBind = Instance.new("TextLabel")
+        local AngleFrame = Instance.new("Frame")
+        local JustAText_2 = Instance.new("TextLabel")
+        local UICorner_2 = Instance.new("UICorner")
+        local AngleNumber = Instance.new("TextLabel")
+        local PowerFrame = Instance.new("Frame")
+        local JustAText_3 = Instance.new("TextLabel")
+        local UICorner_3 = Instance.new("UICorner")
+        local PowerNumber = Instance.new("TextLabel")
+        local Keybind = Instance.new("TextLabel")
+        local TargetFrame = Instance.new("Frame")
+        local JustAText_4 = Instance.new("TextLabel")
+        local UICorner_4 = Instance.new("UICorner")
+        local Playerrr = Instance.new("TextLabel")
+        local Keybind_2 = Instance.new("TextLabel")
+        local UIGradient = Instance.new("UIGradient")
+        local RouteFrame = Instance.new("Frame")
+        local JustAText_5 = Instance.new("TextLabel")
+        local UICorner_5 = Instance.new("UICorner")
+        local RouteOK = Instance.new("TextLabel")
+        local IntFrame = Instance.new("Frame")
+        local UICorner_6 = Instance.new("UICorner")
+        local Intable = Instance.new("TextLabel")
+        local JustAText_6 = Instance.new("TextLabel")
+        local CatchFrame = Instance.new("Frame")
+        local JustAText_7 = Instance.new("TextLabel")
+        local UICorner_7 = Instance.new("UICorner")
+        local Intable_2 = Instance.new("TextLabel")
+        local AirTimeFrame = Instance.new("Frame")
+        local JustAText_8 = Instance.new("TextLabel")
+        local UICorner_8 = Instance.new("UICorner")
+        local AirTimeTEXT = Instance.new("TextLabel")
+        
+        ScreenGui.Parent = game:GetService("CoreGui")
+        ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        ScreenGui.Enabled = false
+        
+        ThrowFrame.Name = "ThrowFrame"
+        ThrowFrame.Parent = ScreenGui
+        ThrowFrame.BackgroundColor3 = Color3.fromRGB(54, 54, 54)
+        ThrowFrame.BackgroundTransparency = 0.200
+        ThrowFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        ThrowFrame.BorderSizePixel = 0
+        ThrowFrame.Position = UDim2.new(0.374483317, 0, 0.0295133851, 0)
+        ThrowFrame.Size = UDim2.new(0, 114, 0, 116)
+        
+        JustAText.Name = "Just A Text"
+        JustAText.Parent = ThrowFrame
+        JustAText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText.BackgroundTransparency = 1.000
+        JustAText.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        JustAText.BorderSizePixel = 0
+        JustAText.Position = UDim2.new(0.0525472537, 0, 0.561034501, 0)
+        JustAText.Size = UDim2.new(0, 101, 0, 34)
+        JustAText.Font = Enum.Font.SourceSans
+        JustAText.Text = "Type:"
+        JustAText.TextColor3 = Color3.fromRGB(61, 121, 182)
+        JustAText.TextSize = 34.000
+        JustAText.TextStrokeColor3 = Color3.fromRGB(61, 121, 182)
+        JustAText.TextStrokeTransparency = 0.610
+        JustAText.TextWrapped = true
+        
+        UICorner.CornerRadius = UDim.new(0, 12)
+        UICorner.Parent = ThrowFrame
+        
+        ThrowType_2.Name = "ThrowType_2"
+        ThrowType_2.Parent = ThrowFrame
+        ThrowType_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        ThrowType_2.BackgroundTransparency = 1.000
+        ThrowType_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        ThrowType_2.BorderSizePixel = 0
+        ThrowType_2.Position = UDim2.new(-0.00902490411, 0, 0.126666635, 0)
+        ThrowType_2.Size = UDim2.new(0, 114, 0, 50)
+        ThrowType_2.Font = Enum.Font.SourceSans
+        ThrowType_2.Text = "Mag"
+        ThrowType_2.TextColor3 = Color3.fromRGB(61, 121, 182)
+        ThrowType_2.TextSize = 36.000
+        ThrowType_2.TextStrokeColor3 = Color3.fromRGB(61, 121, 182)
+        ThrowType_2.TextStrokeTransparency = 0.610
+        ThrowType_2.TextWrapped = true
+        
+        KeyBind.Name = "KeyBind"
+        KeyBind.Parent = ThrowFrame
+        KeyBind.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        KeyBind.BackgroundTransparency = 1.000
+        KeyBind.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        KeyBind.BorderSizePixel = 0
+        KeyBind.Position = UDim2.new(0.674511015, 0, 0.0413793027, 0)
+        KeyBind.Size = UDim2.new(0, 37, 0, 24)
+        KeyBind.Font = Enum.Font.SourceSans
+        KeyBind.Text = "C"
+        KeyBind.TextColor3 = Color3.fromRGB(61, 121, 182)
+        KeyBind.TextSize = 30.000
+        KeyBind.TextStrokeColor3 = Color3.fromRGB(61, 121, 182)
+        KeyBind.TextStrokeTransparency = 0.610
+        KeyBind.TextWrapped = true
+        
+        AngleFrame.Name = "AngleFrame"
+        AngleFrame.Parent = ScreenGui
+        AngleFrame.BackgroundColor3 = Color3.fromRGB(54, 54, 54)
+        AngleFrame.BackgroundTransparency = 0.200
+        AngleFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        AngleFrame.BorderSizePixel = 0
+        AngleFrame.Position = UDim2.new(0.478538364, 0, 0.0295133851, 0)
+        AngleFrame.Size = UDim2.new(0, 114, 0, 116)
+        
+        JustAText_2.Name = "JustAText_2"
+        JustAText_2.Parent = AngleFrame
+        JustAText_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_2.BackgroundTransparency = 1.000
+        JustAText_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        JustAText_2.BorderSizePixel = 0
+        JustAText_2.Position = UDim2.new(0.0862855092, 0, 0.4921875, 0)
+        JustAText_2.Size = UDim2.new(0, 94, 0, 50)
+        JustAText_2.Font = Enum.Font.SourceSans
+        JustAText_2.Text = "Angle:"
+        JustAText_2.TextColor3 = Color3.fromRGB(61, 121, 182)
+        JustAText_2.TextSize = 34.000
+        JustAText_2.TextStrokeColor3 = Color3.fromRGB(61, 121, 182)
+        JustAText_2.TextStrokeTransparency = 0.610
+        JustAText_2.TextWrapped = true
+        
+        UICorner_2.CornerRadius = UDim.new(0, 15)
+        UICorner_2.Parent = AngleFrame
+        
+        AngleNumber.Name = "AngleNumber"
+        AngleNumber.Parent = AngleFrame
+        AngleNumber.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        AngleNumber.BackgroundTransparency = 1.000
+        AngleNumber.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        AngleNumber.BorderSizePixel = 0
+        AngleNumber.Position = UDim2.new(-0.00159922813, 0, 0.104562491, 0)
+        AngleNumber.Size = UDim2.new(0, 114, 0, 50)
+        AngleNumber.Font = Enum.Font.SourceSans
+        AngleNumber.Text = "45"
+        AngleNumber.TextColor3 = Color3.fromRGB(61, 121, 182)
+        AngleNumber.TextSize = 46.000
+        AngleNumber.TextStrokeColor3 = Color3.fromRGB(61, 121, 182)
+        AngleNumber.TextStrokeTransparency = 0.610
+        AngleNumber.TextWrapped = true
+        
+        PowerFrame.Name = "PowerFrame"
+        PowerFrame.Parent = ScreenGui
+        PowerFrame.BackgroundColor3 = Color3.fromRGB(54, 54, 54)
+        PowerFrame.BackgroundTransparency = 0.200
+        PowerFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        PowerFrame.BorderSizePixel = 0
+        PowerFrame.Position = UDim2.new(0.57847929, 0, 0.0291383509, 0)
+        PowerFrame.Size = UDim2.new(0, 114, 0, 116)
+        
+        JustAText_3.Name = "JustAText_3"
+        JustAText_3.Parent = PowerFrame
+        JustAText_3.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_3.BackgroundTransparency = 1.000
+        JustAText_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        JustAText_3.BorderSizePixel = 0
+        JustAText_3.Position = UDim2.new(-0.000253242353, 0, 0.491379321, 0)
+        JustAText_3.Size = UDim2.new(0, 114, 0, 50)
+        JustAText_3.Font = Enum.Font.SourceSans
+        JustAText_3.Text = "Power:"
+        JustAText_3.TextColor3 = Color3.fromRGB(61, 121, 182)
+        JustAText_3.TextSize = 32.000
+        JustAText_3.TextStrokeColor3 = Color3.fromRGB(61, 121, 182)
+        JustAText_3.TextStrokeTransparency = 0.610
+        JustAText_3.TextWrapped = true
+        
+        UICorner_3.CornerRadius = UDim.new(0, 15)
+        UICorner_3.Parent = PowerFrame
+        
+        PowerNumber.Name = "PowerNumber"
+        PowerNumber.Parent = PowerFrame
+        PowerNumber.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        PowerNumber.BackgroundTransparency = 1.000
+        PowerNumber.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        PowerNumber.BorderSizePixel = 0
+        PowerNumber.Position = UDim2.new(-0.000253242353, 0, 0.126666635, 0)
+        PowerNumber.Size = UDim2.new(0, 114, 0, 50)
+        PowerNumber.Font = Enum.Font.SourceSans
+        PowerNumber.Text = "55"
+        PowerNumber.TextColor3 = Color3.fromRGB(61, 121, 182)
+        PowerNumber.TextSize = 44.000
+        PowerNumber.TextStrokeColor3 = Color3.fromRGB(61, 121, 182)
+        PowerNumber.TextStrokeTransparency = 0.610
+        PowerNumber.TextWrapped = true
+        
+        Keybind.Name = "Keybind"
+        Keybind.Parent = PowerFrame
+        Keybind.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Keybind.BackgroundTransparency = 1.000
+        Keybind.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        Keybind.BorderSizePixel = 0
+        Keybind.Position = UDim2.new(0.326669782, 0, -0.0647126585, 0)
+        Keybind.Size = UDim2.new(0, 114, 0, 50)
+        Keybind.Font = Enum.Font.SourceSans
+        Keybind.Text = "Z"
+        Keybind.TextColor3 = Color3.fromRGB(61, 121, 182)
+        Keybind.TextSize = 38.000
+        Keybind.TextStrokeColor3 = Color3.fromRGB(61, 121, 182)
+        Keybind.TextStrokeTransparency = 0.610
+        Keybind.TextWrapped = true
+        
+        TargetFrame.Name = "TargetFrame"
+        TargetFrame.Parent = ScreenGui
+        TargetFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        TargetFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        TargetFrame.BorderSizePixel = 0
+        TargetFrame.Position = UDim2.new(0.599847019, 0, 0.0295133851, 0)
+        TargetFrame.Size = UDim2.new(0, 104, 0, 100)
+        TargetFrame.Visible = false
+        
+        JustAText_4.Name = "JustAText_4"
+        JustAText_4.Parent = TargetFrame
+        JustAText_4.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_4.BackgroundTransparency = 1.000
+        JustAText_4.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        JustAText_4.BorderSizePixel = 0
+        JustAText_4.Position = UDim2.new(0.0625, 0, 0.606666744, 0)
+        JustAText_4.Size = UDim2.new(0, 90, 0, 37)
+        JustAText_4.Font = Enum.Font.FredokaOne
+        JustAText_4.Text = "Target:"
+        JustAText_4.TextColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_4.TextSize = 24.000
+        JustAText_4.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        JustAText_4.TextWrapped = true
+        
+        UICorner_4.CornerRadius = UDim.new(0, 15)
+        UICorner_4.Parent = TargetFrame
+        
+        Playerrr.Name = "Playerrr"
+        Playerrr.Parent = TargetFrame
+        Playerrr.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Playerrr.BackgroundTransparency = 1.000
+        Playerrr.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        Playerrr.BorderSizePixel = 0
+        Playerrr.Position = UDim2.new(0.1875, 0, 0.20799996, 0)
+        Playerrr.Size = UDim2.new(0, 65, 0, 33)
+        Playerrr.Font = Enum.Font.FredokaOne
+        Playerrr.Text = "Player"
+        Playerrr.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Playerrr.TextScaled = true
+        Playerrr.TextSize = 24.000
+        Playerrr.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        Playerrr.TextWrapped = true
+        
+        Keybind_2.Name = "Keybind"
+        Keybind_2.Parent = TargetFrame
+        Keybind_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Keybind_2.BackgroundTransparency = 1.000
+        Keybind_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        Keybind_2.BorderSizePixel = 0
+        Keybind_2.Position = UDim2.new(0.735576928, 0, 0.0479999557, 0)
+        Keybind_2.Size = UDim2.new(0, 27, 0, 21)
+        Keybind_2.Font = Enum.Font.FredokaOne
+        Keybind_2.Text = "Q"
+        Keybind_2.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Keybind_2.TextSize = 24.000
+        Keybind_2.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        Keybind_2.TextWrapped = true
+        
+        UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 85, 127)), ColorSequenceKeypoint.new(0.62, Color3.fromRGB(176, 126, 139)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(212, 134, 146))}
+        UIGradient.Parent = TargetFrame
+        
+        RouteFrame.Name = "RouteFrame"
+        RouteFrame.Parent = ScreenGui
+        RouteFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        RouteFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        RouteFrame.BorderSizePixel = 0
+        RouteFrame.Position = UDim2.new(0.531752169, 0, 0.0226130653, 0)
+        RouteFrame.Size = UDim2.new(0, 104, 0, 100)
+        RouteFrame.Visible = false
+        
+        JustAText_5.Name = "JustAText_5"
+        JustAText_5.Parent = RouteFrame
+        JustAText_5.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_5.BackgroundTransparency = 1.000
+        JustAText_5.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        JustAText_5.BorderSizePixel = 0
+        JustAText_5.Position = UDim2.new(0.0625, 0, 0.529999971, 0)
+        JustAText_5.Size = UDim2.new(0, 90, 0, 50)
+        JustAText_5.Font = Enum.Font.FredokaOne
+        JustAText_5.Text = "Route:"
+        JustAText_5.TextColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_5.TextSize = 24.000
+        JustAText_5.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        JustAText_5.TextStrokeTransparency = 0.000
+        JustAText_5.TextWrapped = true
+        
+        UICorner_5.CornerRadius = UDim.new(0, 15)
+        UICorner_5.Parent = RouteFrame
+        
+        RouteOK.Name = "RouteOK"
+        RouteOK.Parent = RouteFrame
+        RouteOK.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        RouteOK.BackgroundTransparency = 1.000
+        RouteOK.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        RouteOK.BorderSizePixel = 0
+        RouteOK.Position = UDim2.new(-0.052884616, 0, 0.126666635, 0)
+        RouteOK.Size = UDim2.new(0, 114, 0, 50)
+        RouteOK.Font = Enum.Font.FredokaOne
+        RouteOK.Text = "Still"
+        RouteOK.TextColor3 = Color3.fromRGB(255, 255, 255)
+        RouteOK.TextSize = 36.000
+        RouteOK.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        RouteOK.TextStrokeTransparency = 0.000
+        RouteOK.TextWrapped = true
+        
+        IntFrame.Name = "IntFrame"
+        IntFrame.Parent = ScreenGui
+        IntFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        IntFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        IntFrame.BorderSizePixel = 0
+        IntFrame.Position = UDim2.new(0.638102531, 0, 0.0226130653, 0)
+        IntFrame.Size = UDim2.new(0, 104, 0, 100)
+        IntFrame.Visible = false
+        
+        UICorner_6.CornerRadius = UDim.new(0, 15)
+        UICorner_6.Parent = IntFrame
+        
+        Intable.Name = "Intable"
+        Intable.Parent = IntFrame
+        Intable.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Intable.BackgroundTransparency = 1.000
+        Intable.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        Intable.BorderSizePixel = 0
+        Intable.Position = UDim2.new(-0.052884616, 0, 0.126666635, 0)
+        Intable.Size = UDim2.new(0, 114, 0, 50)
+        Intable.Font = Enum.Font.FredokaOne
+        Intable.Text = " No"
+        Intable.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Intable.TextSize = 36.000
+        Intable.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        Intable.TextStrokeTransparency = 0.000
+        Intable.TextWrapped = true
+        
+        JustAText_6.Name = "JustAText_6"
+        JustAText_6.Parent = IntFrame
+        JustAText_6.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_6.BackgroundTransparency = 1.000
+        JustAText_6.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        JustAText_6.BorderSizePixel = 0
+        JustAText_6.Position = UDim2.new(-0.00480769249, 0, 0.5, 0)
+        JustAText_6.Size = UDim2.new(0, 104, 0, 50)
+        JustAText_6.Font = Enum.Font.FredokaOne
+        JustAText_6.Text = " Intable:"
+        JustAText_6.TextColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_6.TextSize = 22.000
+        JustAText_6.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        JustAText_6.TextStrokeTransparency = 0.000
+        JustAText_6.TextWrapped = true
+        
+        CatchFrame.Name = "CatchFrame"
+        CatchFrame.Parent = ScreenGui
+        CatchFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        CatchFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        CatchFrame.BorderSizePixel = 0
+        CatchFrame.Position = UDim2.new(0.743687809, 0, 0.0226130653, 0)
+        CatchFrame.Size = UDim2.new(0, 104, 0, 100)
+        CatchFrame.Visible = false
+        
+        JustAText_7.Name = "JustAText_7"
+        JustAText_7.Parent = CatchFrame
+        JustAText_7.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_7.BackgroundTransparency = 1.000
+        JustAText_7.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        JustAText_7.BorderSizePixel = 0
+        JustAText_7.Position = UDim2.new(0, 0, 0.529999971, 0)
+        JustAText_7.Size = UDim2.new(0, 103, 0, 52)
+        JustAText_7.Font = Enum.Font.FredokaOne
+        JustAText_7.Text = " Catchable:"
+        JustAText_7.TextColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_7.TextSize = 20.000
+        JustAText_7.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        JustAText_7.TextStrokeTransparency = 0.000
+        JustAText_7.TextWrapped = true
+        
+        UICorner_7.CornerRadius = UDim.new(0, 15)
+        UICorner_7.Parent = CatchFrame
+        
+        Intable_2.Name = "Intable_2"
+        Intable_2.Parent = CatchFrame
+        Intable_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Intable_2.BackgroundTransparency = 1.000
+        Intable_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        Intable_2.BorderSizePixel = 0
+        Intable_2.Position = UDim2.new(-0.052884616, 0, 0.116666645, 0)
+        Intable_2.Size = UDim2.new(0, 114, 0, 50)
+        Intable_2.Font = Enum.Font.FredokaOne
+        Intable_2.Text = " No"
+        Intable_2.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Intable_2.TextSize = 36.000
+        Intable_2.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        Intable_2.TextStrokeTransparency = 0.000
+        Intable_2.TextWrapped = true
+        
+        AirTimeFrame.Name = "AirTimeFrame"
+        AirTimeFrame.Parent = ScreenGui
+        AirTimeFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        AirTimeFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        AirTimeFrame.BorderSizePixel = 0
+        AirTimeFrame.Position = UDim2.new(0.849273264, 0, 0.0226130653, 0)
+        AirTimeFrame.Size = UDim2.new(0, 104, 0, 100)
+        AirTimeFrame.Visible = false
+        
+        JustAText_8.Name = "JustAText_8"
+        JustAText_8.Parent = AirTimeFrame
+        JustAText_8.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_8.BackgroundTransparency = 1.000
+        JustAText_8.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        JustAText_8.BorderSizePixel = 0
+        JustAText_8.Position = UDim2.new(-0.052884616, 0, 0.49000001, 0)
+        JustAText_8.Size = UDim2.new(0, 114, 0, 50)
+        JustAText_8.Font = Enum.Font.FredokaOne
+        JustAText_8.Text = "Airtime:"
+        JustAText_8.TextColor3 = Color3.fromRGB(255, 255, 255)
+        JustAText_8.TextSize = 24.000
+        JustAText_8.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        JustAText_8.TextStrokeTransparency = 0.000
+        JustAText_8.TextWrapped = true
+        
+        UICorner_8.CornerRadius = UDim.new(0, 15)
+        UICorner_8.Parent = AirTimeFrame
+        
+        AirTimeTEXT.Name = "AirTimeTEXT"
+        AirTimeTEXT.Parent = AirTimeFrame
+        AirTimeTEXT.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        AirTimeTEXT.BackgroundTransparency = 1.000
+        AirTimeTEXT.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        AirTimeTEXT.BorderSizePixel = 0
+        AirTimeTEXT.Position = UDim2.new(-0.052884616, 0, 0.126666635, 0)
+        AirTimeTEXT.Size = UDim2.new(0, 114, 0, 50)
+        AirTimeTEXT.Font = Enum.Font.FredokaOne
+        AirTimeTEXT.Text = "0.00s"
+        AirTimeTEXT.TextColor3 = Color3.fromRGB(255, 255, 255)
+        AirTimeTEXT.TextSize = 36.000
+        AirTimeTEXT.TextStrokeColor3 = Color3.fromRGB(85, 0, 127)
+        AirTimeTEXT.TextStrokeTransparency = 0.000
+        AirTimeTEXT.TextWrapped = true
+        
+        if t then
+         local beam = Instance.new("Beam", workspace.Terrain)
+         local Attach0 = Instance.new("Attachment", workspace.Terrain)
+         local Attach1 = Instance.new("Attachment", workspace.Terrain)
+         local isLocked = false
+        
+         game:GetService("UserInputService").InputBegan:Connect(
+             function(input, gpe)
+                 if input.KeyCode == Enum.KeyCode.Q and not gpe then
+                     isLocked = not isLocked
+                 end
+             end
+         )
+        
+         beam.Attachment0 = Attach0
+         beam.Attachment1 = Attach1
+         beam.Color =
+             ColorSequence.new(
+             {
+                 ColorSequenceKeypoint.new(0, Color3.fromRGB(62, 134, 222)),
+                 ColorSequenceKeypoint.new(1, Color3.fromRGB(62, 134, 222))
+             }
+         )
+        
+        
+         local VisPart = Instance.new("Part")
+         VisPart.Size = VisPart.Size + Vector3.new(1.2, 0, 1.2)
+         VisPart.Name = "TargetVisualPart"
+         VisPart.Anchored = true
+         VisPart.Parent = workspace
+         VisPart.CanCollide = false
+         VisPart.Material = Enum.Material.Neon
+         VisPart.Color = Color3.fromRGB(255,255,255)
+         beam.Segments = 5000
+         local par = Instance.new("Part")
+         par.Parent = workspace
+         par.Size = Vector3.new(8, 8, 8)
+         par.Name = "LandingPart"
+         par.CanCollide = false
+         par.Anchored = true
+         par.Shape = Enum.PartType.Ball
+         par.Color = Color3.fromRGB(255, 255, 255)
+        
+         local function grabMousePos()
+             return Vector2.new(
+                 game:GetService("UserInputService"):GetMouseLocation().X,
+                 game:GetService("UserInputService"):GetMouseLocation().Y
+             )
+         end
+        
+         local function isVisandPos(Pos)
+             local camPos, OnScreen = workspace.CurrentCamera:WorldToViewportPoint(Pos)
+             if OnScreen then
+                 return camPos, OnScreen
+             end
+         end
+        
+         local Players = game:GetService("Players")
+         local Player = Players.LocalPlayer
+         local Char = Player.Character or Player.CharacterAdded:Wait()
+         local HumanoidRootPart = Char:FindFirstChild("HumanoidRootPart")
+         local FF2Grav = 28
+         local mse = Player:GetMouse()
+         local camera = workspace.CurrentCamera
+         local ClosestPlr = nil
+         local trace = Drawing.new("Line")
+         trace.Transparency = 0.70
+         trace.Thickness = 4.5
+         trace.Color = Color3.fromRGB(255, 105, 180)
+         local uis = game:GetService("UserInputService")
+         local QBAIMtab = {
+             OffSetBased = false
+         }
+         local Workspace = game:GetService("Workspace")
+         local UserInputService = game:GetService("UserInputService")
+        
+         local function getNearestPlayerToMouse()
+             local MousePosition = Vector2.new(mse.X, mse.Y)
+             local ClosestPlayer
+             local ClosestDistance = math.huge
+        
+             local function getScreenPosition(part)
+                 local ScreenPoint, onScreen = workspace.CurrentCamera:WorldToViewportPoint(part.Position)
+                 return Vector2.new(ScreenPoint.X, ScreenPoint.Y), onScreen
+             end
+        
+             for _, player in ipairs(Players:GetPlayers()) do
+                 if player ~= Players.LocalPlayer and player.Team == Players.LocalPlayer.Team then
+                     local Character = player.Character
+                     if Character then
+                         local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+                         if HumanoidRootPart then
+                             local ScreenPosition, onScreen = getScreenPosition(HumanoidRootPart)
+                             local Distance = (ScreenPosition - MousePosition).Magnitude
+                             if Distance < ClosestDistance then
+                                 ClosestPlayer = player
+                                 ClosestDistance = Distance
+                             end
+                         end
+                     end
+                 end
+             end
+        
+             for _, bot in ipairs(workspace:GetChildren()) do
+                 if bot.Name == "npcwr" then
+                     local stationA = bot:FindFirstChild("a")
+                     local stationB = bot:FindFirstChild("b")
+        
+                     if stationA and stationB then
+                         local bot1 = stationA:FindFirstChild("bot 1")
+                         local bot2 = stationB:FindFirstChild("bot 3")
+        
+                         if bot1 then
+                             local bot1HumanoidRootPart = bot1:FindFirstChild("HumanoidRootPart")
+                             if bot1HumanoidRootPart then
+                                 local bot1ScreenPosition, onScreen = getScreenPosition(bot1HumanoidRootPart)
+                                 local bot1Distance = (bot1ScreenPosition - MousePosition).Magnitude
+                                 if bot1Distance < ClosestDistance then
+                                     ClosestPlayer = bot1
+                                     ClosestDistance = bot1Distance
+                                 end
+                             end
+                         end
+        
+                         if bot2 then
+                             local bot2HumanoidRootPart = bot2:FindFirstChild("HumanoidRootPart")
+                             if bot2HumanoidRootPart then
+                                 local bot2ScreenPosition, onScreen = getScreenPosition(bot2HumanoidRootPart)
+                                 local bot2Distance = (bot2ScreenPosition - MousePosition).Magnitude
+                                 if bot2Distance < ClosestDistance then
+                                     ClosestPlayer = bot2
+                                     ClosestDistance = bot2Distance
+                                 end
+                             end
+                         end
+                     end
+                 end
+             end
+        
+             return ClosestPlayer
+         end
+        
+         local function isMoving(PlayerDaddy)
+             if not string.find(PlayerDaddy.Name, "bot 1") or not string.find(PlayerDaddy.Name, "bot 3") then
+                 if PlayerDaddy.Character:FindFirstChild("Humanoid").MoveDirection.Magnitude > 0 then
+                     return true
+                 else
+                     return false
+                 end
+             end
+         end
+        
+         local function beamProjectile(g, v0, x0, t1) 
+        
+             local c = 0.5 * 0.5 * 0.5
+             local p3 = 0.5 * g * t1 * t1 + v0 * t1 + x0
+             local p2 = p3 - (g * t1 * t1 + v0 * t1) / 3
+             local p1 = (c * g * t1 * t1 + 0.5 * v0 * t1 + x0 - c * (x0 + p3)) / (3 * c) - p2
+        
+             local curve0 = (p1 - x0).magnitude
+             local curve1 = (p2 - p3).magnitude
+        
+             local b = (x0 - p3).unit
+             local r1 = (p1 - x0).unit
+             local u1 = r1:Cross(b).unit
+             local r2 = (p2 - p3).unit
+             local u2 = r2:Cross(b).unit
+             b = u1:Cross(r1).unit
+        
+             local cf1 = CFrame.new(x0.x, x0.y, x0.z, r1.x, u1.x, b.x, r1.y, u1.y, b.y, r1.z, u1.z, b.z)
+        
+             local cf2 = CFrame.new(p3.x, p3.y, p3.z, r2.x, u2.x, b.x, r2.y, u2.y, b.y, r2.z, u2.z, b.z)
+        
+             return curve0, -curve1, cf1, cf2
+         end
+        
+         local function getFieldOrientation(throwerPosition, playerPosition)
+             if playerPosition.Z > 0 then
+                 return 1
+             else
+                 return -1
+             end
+         end
+        
+         local function clampnum(val, minmimum, maxValue)
+             return math.min(math.max(val, minmimum), maxValue)
+         end
+        
+         local function CalculateRouteofPlayer(Playa)
+             local RouteType
+             if not string.find(Playa.Name, "bot 1") and not string.find(Playa.Name, "bot 3") then
+                 local DirectionMoving = Playa.Character:FindFirstChild("Humanoid").MoveDirection
+                 local DirectionMovingLeftRight = Playa.Character:FindFirstChild("Humanoid").MoveDirection.X
+                 local DirectionMovingFoward = Playa.Character:FindFirstChild("Humanoid").MoveDirection.Z
+                 local Distance =
+                     (Playa.Character:FindFirstChild("HumanoidRootPart").Position -
+                     Player.Character:FindFirstChild("HumanoidRootPart").Position)
+                 local Direction = Distance.Unit
+                 local magdist = Distance.magnitude
+                 local X = Direction * Vector3.new(1, 0, 0)
+                 local X2 = Direction * Vector3.new(-1, 0, 0)
+                 local Z = Direction * Vector3.new(0, 0, 1)
+                 local DirectionDot = DirectionMoving:Dot(Distance)
+                 local Z2
+        
+                 if
+                     getFieldOrientation(
+                         Player.Character:FindFirstChild("HumanoidRootPart"),
+                         DirectionMoving
+                     ) == -1
+                 then
+                     Z2 = Direction * Vector3.new(0, 0, -1)
+                 else
+                     Z2 = Direction * Vector3.new(0, 0, 1)
+                 end
+        
+                 local XZ = Direction * Vector3.new(1, 0, 1)
+                 local StreakingRoutesDotProduct = DirectionMoving:Dot(Z2) 
+        
+                 if StreakingRoutesDotProduct >= .80 or StreakingRoutesDotProduct <= -0.80 then
+                     RouteType = "Straight"
+                 elseif StreakingRoutesDotProduct >= .45 or StreakingRoutesDotProduct <= -0.45 then
+                     RouteType = "Post"
+                 elseif StreakingRoutesDotProduct >= .2 or StreakingRoutesDotProduct <= -.2 then
+                     RouteType = "Slant"
+                 elseif StreakingRoutesDotProduct == 0 then
+                     RouteType = "Still"
+                 end
+                 if DirectionDot < 0 then
+                     RouteType = "Comeback"
+                 end
+             else
+                 RouteType = "Straight"
+             end
+             return RouteType
+         end
+        
+         local function HorizontalRangeOfProjectile(NearestPlayer)
+             local NearestPlayerRootPart
+             if string.find(NearestPlayer.Name, "bot 1") or string.find(NearestPlayer.Name, "bot 3") then
+                 NearestPlayerRootPart = NearestPlayer:FindFirstChild("Head")
+             else
+                 NearestPlayerRootPart = NearestPlayer.Character.Head
+             end
+             local PlayerRootPart = Player.Character.HumanoidRootPart
+             local ProjectileRange = PlayerRootPart.Position - NearestPlayerRootPart.Position
+             local HorizontalRange = Vector2.new(ProjectileRange.X, ProjectileRange.Z).Magnitude
+             return HorizontalRange
+         end
+        
+         local function HighSpeedLowAngleCalcs(Grav, Speed)
+             local RP = HorizontalRangeOfProjectile(getNearestPlayerToMouse())
+             local toDeg = math.deg
+             local asin = math.asin
+             local Eq = 0.535 * asin((RP * Grav) / (Speed ^ 2))
+             local Eq2 = toDeg(Eq)
+             return Eq
+         end
+        
+         local function calculateLaunchAngle(Gravvv, FootballSpeed) 
+             local RangeYes = HorizontalRangeOfProjectile(getNearestPlayerToMouse())
+             local launchAngle = math.asin(Gravvv * RangeYes / (FootballSpeed ^ 2))
+             return launchAngle
+         end
+        
+         local function CalculateInitalVelocityYAxis(InitalVelocity, AngleNeeded)
+             local VelocityY = InitalVelocity * math.sin(AngleNeeded)
+             return VelocityY
+         end
+        
+         local function calculateInitalVelocityXAxis(InitalVelocity, AngleNeeded)
+             local VelocityX = InitalVelocity * math.cos(AngleNeeded)
+             return VelocityX
+         end
+        
+         local function CalculateMaxHeightOfProjectile(Initalvel, angle, gravv)
+             local InitalVelocityY = CalculateVelocityYAxis(Initalvel, angle)
+             local Hmax = (InitalVelocityY ^ 2) / (2 * gravv)
+             return Hmax
+         end
+        
+         local function GetTimeOfFlightProjectile(FootballInitalVelocity, AngleNeeded, Grav)
+             local TimeOfflightEquation = (2 * FootballInitalVelocity * math.sin(AngleNeeded)) / Grav
+             return TimeOfflightEquation
+         end
+        
+         local function TimeOfFlight2(FootballS, A, FootballDownwardGravity)
+             local VerticalVelocity = CalculateInitalVelocityYAxis(FootballS, A)
+             local Tlowest = VerticalVelocity / FootballDownwardGravity 
+             return Tlowest
+         end
+        
+         local function OverallVelocityNeededToReachAPosition(Angie, StartPos, EndPositon, Gravity, Time)
+             local VelocityNeeded = (EndPositon - StartPos - 0.5 * Gravity * Time * Time) / Time
+             local Y = (EndPositon - StartPos)
+             local Xz1 = (Y * Vector3.new(0.25, 0, 0.25))
+             local xz2 = Vector2.new(Y.X, Y.Z).Magnitude
+             local VelOverTime = xz2 / Time
+             local notVector = Xz1 / Xz1.Magnitude
+             local Equationderived = notVector * VelOverTime
+             local EstimatedVel = Equationderived + Vector3.new(0, VelocityNeeded.Y, 0)
+             local direction = ((StartPos + EstimatedVel) - StartPos).unit
+             local pow = EstimatedVel.Y / direction.Y
+        
+             return EstimatedVel, direction, clampnum(math.round(pow), 0, 95)
+         end
+        
+         local function CalculateHeightOfTwoPositions(Start, End)
+             local Dis = (Start - End)
+             local h = Dis.Y
+             return h
+         end
+        
+         local function getThrowType()
+             return tostring(ThrowType_2.Text)
+         end
+        
+         game:GetService("UserInputService").InputBegan:Connect(
+             function(input, gameProcessedEvent)
+                 local ThrowTypee = getThrowType()
+                 if input.KeyCode == Enum.KeyCode.C and ThrowTypee == "Dime" and not gameProcessedEvent then
+                     ThrowType_2.Text = "Dive"
+                 elseif input.KeyCode == Enum.KeyCode.C and ThrowTypee == "Dive" and not gameProcessedEvent then
+                     ThrowType_2.Text = "Mag"
+                 elseif input.KeyCode == Enum.KeyCode.C and ThrowTypee == "Mag" and not gameProcessedEvent then
+                     ThrowType_2.Text = "Dot"
+                 elseif input.KeyCode == Enum.KeyCode.C and ThrowTypee == "Dot" and not gameProcessedEvent then
+                     ThrowType_2.Text = "Bullet"
+                 elseif input.KeyCode == Enum.KeyCode.C and ThrowTypee == "Bullet" and not gameProcessedEvent then
+                     ThrowType_2.Text = "Dime"
+                 end
+             end
+         )
+        
+         local function CalculateHorizandVeri(TimeOFF, End, Beginning, GravV)
+             local Displace = (Beginning - End)
+             local Xaxis = (Displace.X)
+             local ZAxis = (Displace.Z)
+             local YAXis = CalculateHeightOfTwoPositions(Beginning, End)
+             local XYZVector3 = Vector3.new(Xaxis, YAXis, ZAxis)
+             local Horizontally = Vector2.new(Xaxis, Zxis).magnitude
+             local HorizVelNeeded = Horizontally / TimeOFF 
+        
+             local UpWardVel = (YAXis - (0.5 * -GravV * (TimeOFF ^ 2))) 
+             local UpWARDVelneeded = UpWardVel / TimeOFF
+        
+             return UpWardVel, HorizVelNeeded
+         end
+        
+         local function CalculateHeightOfTwoPositions(Start, End)
+             local Dis = (Start - End)
+             local h = Dis.Y
+             return h
+         end
+        
+         local function isBotMoving(SpeedOFBot)
+             if SpeedOFBot == Vector3.new(0, 0, 0) then
+                 return false
+             else
+                 return true
+             end
+         end
+        
+         local function BotEstimatedVel(Time, Bot)
+             local Speed = Bot:FindFirstChild("HumanoidRootPart").Velocity
+             local TOFF = Time
+             local TypeThroww = getThrowType()
+             local Botequation
+             local LeadNumtabBot3
+             local LeadNumtabBot1
+             if isBotMoving(Bot:FindFirstChild("HumanoidRootPart").Velocity) then
+                 LeadNumtabBot3 = {
+                     ["Dime"] = Vector3.new(-1, 1.25, -6),
+                     ["Mag"] = Vector3.new(-2, 2, -11),
+                     ["Dive"] = Vector3.new(-1.25, 1.5, -9),
+                     ["Dot"] = Vector3.new(-0.09, 0.09, -4),
+                     ["Bullet"] = Vector3.new(-5, -1, -1.25),
+                     ["Jump"] = Vector3.new(-1, 2.25, -5)
+                 }
+                 LeadNumtabBot1 = {
+                     ["Dime"] = Vector3.new(1, 1.25, 6),
+                     ["Mag"] = Vector3.new(2, 2, 11),
+                     ["Dive"] = Vector3.new(1.25, 1.5, 9),
+                     ["Dot"] = Vector3.new(0.09, 0.09, 4),
+                     ["Fade"] = Vector3.new(0, 0, 0),
+                     ["Bullet"] = Vector3.new(5, 1, 1.25),
+                     ["Jump"] = Vector3.new(1, 2, 5)
+                 }
+             else
+                 LeadNumtabBot3 = {
+                     ["Dime"] = Vector3.new(0, 0, 0),
+                     ["Mag"] = Vector3.new(0, 0, 0),
+                     ["Dive"] = Vector3.new(0, 0, 0),
+                     ["Dot"] = Vector3.new(0, 0, 0),
+                     ["Fade"] = Vector3.new(0, 0, 0),
+                     ["Bullet"] = Vector3.new(0, 0, 0),
+                     ["Jump"] = Vector3.new(0, 4, 0)
+                 }
+                 LeadNumtabBot1 = {
+                     ["Dime"] = Vector3.new(0, 0, 0),
+                     ["Mag"] = Vector3.new(0, 0, 0),
+                     ["Dive"] = Vector3.new(0, 0, 0),
+                     ["Dot"] = Vector3.new(0, 0, 0),
+                     ["Fade"] = Vector3.new(0, 0, 0),
+                     ["Bullet"] = Vector3.new(0, 0, 0),
+                     ["Jump"] = Vector3.new(0, 5, 0)
+                 }
+             end
+             local TimeAccount = (Speed * Time)
+             if Bot.Name == "bot 3" and isBotMoving(Bot:FindFirstChild("HumanoidRootPart").Velocity) then
+                 Botequation =
+                     Bot:FindFirstChild("HumanoidRootPart").Position + (TimeAccount) +
+                     LeadNumtabBot3[TypeThroww]
+             elseif Bot.Name == "bot 1" and isBotMoving(Bot:FindFirstChild("HumanoidRootPart").Velocity) then
+                 Botequation =
+                     Bot:FindFirstChild("HumanoidRootPart").Position + (TimeAccount) +
+                     LeadNumtabBot1[TypeThroww]
+             elseif Bot.Name == "bot 3" and not isBotMoving(Bot:FindFirstChild("HumanoidRootPart").Velocity) then
+                 Botequation = Bot:FindFirstChild("HumanoidRootPart").Position + LeadNumtabBot3[TypeThroww]
+             elseif Bot.Name == "bot 1" and not isBotMoving(Bot:FindFirstChild("HumanoidRootPart").Velocity) then
+                 Botequation = Bot:FindFirstChild("HumanoidRootPart").Position
+             end
+        
+             return Botequation
+         end
+        
+         local function toThrowDirection(HVelocity, VVelocity, Time, Gravity, Beginning, End)
+             local XThroughZVelocity = HVelocity
+             local UPVel = VVelocity
+             local PositionFromTwoPoints = (Beginning - End)
+             local UpWardVelocityOffset = Vector3.new(0, UPVel, 0)
+             local FowardAndBackward = Vector3.new(0, 0, PositionFromTwoPoints.Z)
+        
+             local toSide = Vector3.new(PositionFromTwoPoints.X, 0, 0)
+        
+             local BothAxis = Vector3.new(1, 0, 1)
+        
+             local DirectionMag = (PositionFromTwoPoints * BothAxis).magnitude
+             local DirectionUnit = (PositionFromTwoPoints * BothAxis).Unit
+             local DirectionNormalVec3 = (PositionFromTwoPoints * BothAxis)
+        
+             local DivisonToCalcAverage = (DirectionNormalVec3 / DirectionMag)
+             local HorizontalVelocityAccountedfor = DivisonToCalcAverage * XThroughZVelocity
+             local VelocityOffsetAccountedFor = HorizontalVelocityAccountedfor + UpWardVelocityOffset
+        
+             return VelocityOffsetAccountedFor
+         end
+        
+         local function getOffsetPredictionBasedOnRouteandThrowType(Route, ThrowType)
+             if QBAIMtab.OffSetBased then
+                 local closestPlrtomouse = getNearestPlayerToMouse()
+                 local CalculatedRoute = CalculateRouteofPlayer(closestPlrtomouse)
+        
+                 local LeftandRightXOf
+                 local LeftandRightZOf
+        
+                 local FowardXOf
+                 local FowardZOf
+        
+                 local BackwardXOf
+                 local BackwardZOf
+                 if Route == "LeftRight" and ThrowType == "Dime" then
+                     LeftandRightXOf = 0.28
+                     LeftandRightZOf = 0.25
+                 elseif Route == "Foward" or "Backward" and ThrowType == "Dime" then
+                     FowardXOf = 0.27
+                     FowardZOf = 0.35
+                     BackwardXOf = 0.015
+                     BackwardZOf = 0.2
+                 elseif Route == "LeftRight" and ThrowType == "Dive" then
+                     LeftandRightXOf = 0.45
+                     LeftandRightZOf = 0.35
+                 end
+             end
+         end
+        
+         local Highlight = Instance.new("Highlight")
+         Highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        
+         local function updateHighlight(nearest)
+             if nearest and nearest.Name ~= "bot 1" or nearest.Name ~= "bot 3" then
+                 if nearest.Character and nearest.Character:FindFirstChild("HumanoidRootPart") then
+                     Highlight.Adornee = nearest.Character
+                     Highlight.Parent = nearest.Character.HumanoidRootPart
+                     Highlight.Transparency = 1
+                 else
+                     Highlight.Parent = nil
+                 end
+             elseif nearest.Name == "bot 1" or nearest.Name == "bot 3" then
+                 Highlight.Parent = nearest
+                 Highlight.Adornee = nearest:FindFirstChild("HumanoidRootPart")
+             elseif not nearest then
+                 Highlight.Parent = nil
+             end
+         end
+        
+         local function getPeopleGuardingClosestToMouse(WR)
+             local ClosestCB, MaxDistance = nil, 9e9
+             if game.PlaceId == 8206123457 then
+                 for index, CB in next, Players:GetPlayers() do
+                     if CB ~= WR and CB ~= Player then
+                         if CB:IsA("Player") and CB.Character then
+                             if not string.find(WR.Name, "bot 1") or not string.find(WR.Name, "bot 1") then
+                                 local dist =
+                                     (CB.Character:FindFirstChild("HumanoidRootPart").Position -
+                                     WR.Character:FindFirstChild("HumanoidRootPart").Position).magnitude
+                                 if dist < MaxDistance then
+                                     ClosestCB = CB
+                                     MaxDistance = dist
+                                 end
+                             end
+                         end
+                     end
+                 end
+             else
+                 for index, CB in next, Players:GetPlayers() do
+                     if CB ~= WR and CB ~= Player and CB.Team ~= Player.Team then
+                         if CB:IsA("Player") and CB.Character then
+                             local dist =
+                                 (CB.Character:FindFirstChild("HumanoidRootPart").Position -
+                                 WR.Character:FindFirstChild("HumanoidRootPart").Position).magnitude
+                             if dist < MaxDistance then
+                                 ClosestCB = CB
+                                 MaxDistance = dist
+                             end
+                         end
+                     end
+                 end
+             end
+             return ClosestCB
+         end
+        
+         local function Interceptable(Corner, LandingPos, t)
+             if Corner and Corner.Character then
+                 local Dist =
+                     (Corner.Character:FindFirstChild("HumanoidRootPart").Position - LandingPos).magnitude
+        
+                 local WalksSpeedOFPlr = Corner.Character:FindFirstChild("Humanoid").WalkSpeed
+                 local DiveingNumberAccountedFor = 0.31
+                 local eqq = (Dist / WalksSpeedOFPlr) - DiveingNumberAccountedFor 
+        
+                 local Percent = (Dist * 0.70)
+                 local HighestThreshHold = (Dist - Percent)
+                 if eqq <= t then
+                     return true
+                 elseif Dist == 0 then
+                     return true
+                 else
+                     return false
+                 end
+             end
+         end
+        
+         local function getClosestCBtoBot(BotHere)
+             local CbBot
+             for index, CBBot in next, workspace:GetChildren() do
+                 if game.PlaceId == 8206123457 and CBBot.Name == "npcwr" then
+                     local A = CBBot["a"]
+                     local B = CBBot["b"]
+                     local ACBBot = A["bot 2"]
+                     local BCBBot = B["bot 4"]
+                     if BotHere.Name == "bot 1" then
+                         CbBot = ACBBot
+                     elseif BotHere.Name == "bot 3" then
+                         CbBot = BCBBot
+                     end
+                 end
+             end
+             return CbBot
+         end
+        
+         local function botInterceptable(Corna, LandingEstimatedPos, t)
+             if Corna:FindFirstChild("HumanoidRootPart") then
+                 local BotDist =
+                     (Corna:FindFirstChild("HumanoidRootPart").Position - LandingEstimatedPos).magnitude
+                 local WalksSpeedOFPlr = 20
+                 local DiveingNumberAccountedFor = 0.31
+                 local eqq = (BotDist / WalksSpeedOFPlr) - DiveingNumberAccountedFor 
+        
+                 local Percenty = (BotDist * 0.70)
+                 local Highest = (BotDist - Percenty)
+                 if eqq <= t then
+                     return true
+                 elseif BotDist == 0 then
+                     return true
+                 else
+                     return false
+                 end
+             end
+         end
+        
+         local function CatchAble(wr, LandingPos, TimeOfProjectileFlight)
+             if wr and wr.Character then
+                 local Dist =
+                     (wr.Character:FindFirstChild("HumanoidRootPart").Position - LandingPos).magnitude
+                 local WalksSpeedOFPlr = wr.Character:FindFirstChild("Humanoid").WalkSpeed
+                 local DiveingNumberAccountedFor = 0.31
+                 local eqq = (Dist / WalksSpeedOFPlr) - DiveingNumberAccountedFor 
+                 local Percent = (Dist * 0.70)
+                 local HighestThreshHold = (Dist - Percent)
+                 local WalkSpeed = 16
+                 if eqq <= TimeOfProjectileFlight then
+                     return true
+                 elseif Dist == 0 then
+                     return true
+                 else
+                     return false
+                 end
+             end
+         end
+        
+         local function botCatchAble(Wr, LandingEstimatedPoss)
+             if Wr:FindFirstChild("HumanoidRootPart") then
+                 local BotDist =
+                     (Wr:FindFirstChild("HumanoidRootPart").Position - LandingEstimatedPoss).magnitude
+                 local Percenty = (BotDist * 0.70)
+                 local Highest = (BotDist - Percenty)
+                 if BotDist <= Highest then
+                     return true
+                 elseif BotDist == 0 then
+                     return true
+                 else
+                     return false
+                 end
+             end
+         end
+         local function clampnum(val, minmimum, maxValue)
+             return math.min(math.max(val, minmimum), maxValue)
+         end
+        
+         local function KeepPosInBounds(TargetPos, MinX, MinZ)
+             local X = TargetPos.X
+             local Y = TargetPos.Y
+             local Z = TargetPos.Z
+             local clampedX
+             local clampedZ
+             if TargetPos.X < -MinX then
+                 clampedX = -70.5
+             elseif TargetPos.X > MinX then
+                 clampedX = 70.5
+             elseif TargetPos.X > -MinX and TargetPos.X < MinX then
+                 clampedX = X
+             end
+        
+             if TargetPos.Z < -MinZ then
+                 clampedZ = -175.5
+             elseif TargetPos.Z > MinZ then
+                 clampedZ = 175.5
+             elseif TargetPos.Z > -MinZ and TargetPos.Z < MinZ then
+                 clampedZ = Z
+             end
+             local ClampedVector3 = Vector3.new(clampedX, Y, clampedZ)
+             return ClampedVector3
+         end
+        
+         local function RoundNumToHundredths(number)
+             return math.floor(number * 100 + 0.5) / 100
+         end
+        
+         local function GetTargetPositionForWR(Time, WideReceiver)
+             if WideReceiver.Character and WideReceiver.Character:FindFirstChild("HumanoidRootPart") then
+                 local WRMovingVelocity = WideReceiver.Character:FindFirstChild("Humanoid").MoveDirection
+                 local TypeThrow = getThrowType()
+        
+                 local LeadNumtab
+        
+                 local fieldOrientation =
+                     getFieldOrientation(
+                     Player.Character:FindFirstChild("HumanoidRootPart").Position,
+                     WideReceiver.Character:FindFirstChild("Humanoid").MoveDirection
+                 )
+                 if isMoving(WideReceiver) then
+                     if fieldOrientation == 1 then
+                         LeadNumtab = {
+                             ["Dime"] = Vector3.new(1, 1.65, 9),
+                             ["Mag"] = Vector3.new(2, 2, 11),
+                             ["Dive"] = Vector3.new(1.25, 1.86, 9.5),
+                             ["Dot"] = Vector3.new(1, 1.2, 7),
+                             ["Fade"] = Vector3.new(0, 0, 0),
+                             ["Bullet"] = Vector3.new(5, 1, 1),
+                             ["Jump"] = Vector3.new(1, 2.25, 7.5)
+                         }
+                     elseif fieldOrientation == -1 then
+                         LeadNumtab = {
+                             ["Dime"] = Vector3.new(1, 1.65, -9),
+                             ["Mag"] = Vector3.new(2, 2, -11),
+                             ["Dive"] = Vector3.new(1.25, 1.86, -9.5),
+                             ["Dot"] = Vector3.new(1, 1.2, -7),
+                             ["Fade"] = Vector3.new(0, 0, 0),
+                             ["Bullet"] = Vector3.new(-5, 1, -1),
+                             ["Jump"] = Vector3.new(1, 2.25, -7.5)
+                         }
+                     end
+                 else
+                     LeadNumtab = {
+                         ["Dime"] = Vector3.new(0, 0, 0),
+                         ["Mag"] = Vector3.new(0, 0, 0),
+                         ["Dive"] = Vector3.new(0, 0, 0),
+                         ["Dot"] = Vector3.new(0, 0, 0),
+                         ["Fade"] = Vector3.new(0, 0, 0),
+                         ["Bullet"] = Vector3.new(0, 0, 0),
+                         ["Jump"] = Vector3.new(0, 5, 0)
+                     }
+                 end
+                 local ThrowTypeAccountability
+        
+                 if TypeThrow == "Dot" then
+                     ThrowTypeAccountability = (WRMovingVelocity * 17.5 * Time)
+                 elseif TypeThrow == "Bullet" then
+                     local XZAXIS = Vector3.new(WRMovingVelocity.X, 0, WRMovingVelocity.Z)
+                     ThrowTypeAccountability = (XZAXIS * 20.02 * Time)
+                 elseif TypeThrow == "Jump" then
+                     ThrowTypeAccountability = (WRMovingVelocity * 18.5 * Time)
+                 elseif TypeThrow == "Dime" then
+                     ThrowTypeAccountability = (WRMovingVelocity * 18.9 * Time)
+                 elseif TypeThrow == "Dive" then
+                     ThrowTypeAccountability = (WRMovingVelocity * 19.3 * Time)
+                 elseif TypeThrow == "Mag" then
+                     ThrowTypeAccountability = (WRMovingVelocity * 19.7 * Time)
+                 end
+        
+                 local Equation
+                 if isMoving(WideReceiver) then
+                     if TypeThrow == "Fade" then
+                         Equation = WideReceiver.Character.Head.Position + LeadNumtab[TypeThrow]
+                     elseif TypeThrow == "Bullet" then
+                         Equation =
+                             WideReceiver.Character.Head.Position + (ThrowTypeAccountability) +
+                             LeadNumtab[TypeThrow]
+                     else
+                         Equation =
+                             WideReceiver.Character.Head.Position + (ThrowTypeAccountability) +
+                             LeadNumtab[TypeThrow]
+                     end
+                 elseif not isMoving(WideReceiver) and TypeThrow == "Jump" then 
+                     Equation =
+                         WideReceiver.Character.Head.Position + (ThrowTypeAccountability) +
+                         Vector3.new(0, 6, 0)
+                 else
+                     Equation = WideReceiver.Character.Head.Position
+                 end
+        
+                 return Equation
+             else
+                 warn("Wide Receiver or HumanoidRootPart not found")
+                 return Vector3.new(0, 0, 0)
+             end
+         end
+        
+         local Data = {
+             Direction = Vector3.new(0, 0, 0),
+             NormalPower = 55,
+             BulletModeAngle = 5,
+             FadeModeAngle = 55,
+             LowestPower = 40,
+             MaxPower = 95,
+             Angle = 45,
+             MaxAngle = 55,
+             lowestAngle = 10
+         }
+        
+         local function predicitLand(Velocity, Gravity, num, start, powa, timeoflight)
+             local Vel = powa * Velocity
+             local position = start + Vel * timeoflight + 0.5 * Gravity * timeoflight * timeoflight
+             return position
+         end
+        
+         game:GetService("UserInputService").InputBegan:Connect(
+             function(input, typeing)
+                 if not AutoAngle and not typeing then
+                     local TT = getThrowType()
+                     if TT == "Bullet" then
+                         if input.KeyCode == Enum.KeyCode.R and Data.BulletModeAngle < 20 then
+                             Data.BulletModeAngle = Data.BulletModeAngle + 5
+                         elseif input.KeyCode == Enum.KeyCode.F and Data.BulletModeAngle > 5 then
+                             Data.BulletModeAngle = Data.BulletModeAngle - 5
+                         elseif input.KeyCode == Enum.KeyCode.R and Data.BulletModeAngle == 20 then
+                             warn("Cannot Up Angle Any more, Max Angle is 20")
+                             Data.BulletModeAngle = Data.BulletModeAngle + 0
+                         elseif input.KeyCode == Enum.KeyCode.F and Data.BulletModeAngle == 5 then
+                             warn("Cannot Lower Angle Any more, Lowest Angle is 5")
+                             Data.BulletModeAngle = Data.BulletModeAngle - 0
+                         end
+                     elseif TT == "Fade" then
+                         if input.KeyCode == Enum.KeyCode.R and Data.FadeModeAngle < 75 then
+                             Data.FadeModeAngle = Data.FadeModeAngle + 5
+                         elseif input.KeyCode == Enum.KeyCode.F and Data.FadeModeAngle > 55 then
+                             Data.FadeModeAngle = Data.FadeModeAngle - 5
+                         elseif input.KeyCode == Enum.KeyCode.R and Data.FadeModeAngle == 75 then
+                             warn("Cannot Up Angle Any more, Max Angle is 75")
+                             Data.FadeModeAngle = Data.FadeModeAngle + 0
+                         elseif input.KeyCode == Enum.KeyCode.F and Data.FadeModeAngle == 55 then
+                             warn("Cannot Lower Angle Any more, Lowest Angle is 55")
+                             Data.FadeModeAngle = Data.FadeModeAngle - 0
+                         end
+                     else
+                         if input.KeyCode == Enum.KeyCode.R and Data.Angle < 55 then
+                             Data.Angle = Data.Angle + 5
+                         elseif input.KeyCode == Enum.KeyCode.F and Data.Angle > 10 then
+                             Data.Angle = Data.Angle - 5
+                         elseif input.KeyCode == Enum.KeyCode.R and Data.Angle == 55 then
+                             warn("Cannot Up Angle Any more, Max Angle is 55")
+                             Data.Angle = Data.Angle + 0
+                         elseif input.KeyCode == Enum.KeyCode.F and Data.Angle == 10 then
+                             warn("Cannot Lower Angle Any more, Lowest Angle is 10")
+                             Data.Angle = Data.Angle - 0
+                         end
+                     end
+                 end
+             end
+         )
+        
+         game:GetService("UserInputService").InputBegan:Connect(
+             function(input, typein)
+                 if not AutoPower and not typein then
+                     if input.KeyCode == Enum.KeyCode.Z and Data.NormalPower < Data.MaxPower then
+                         Data.NormalPower = Data.NormalPower + 5
+                     elseif input.KeyCode == Enum.KeyCode.X and Data.NormalPower > Data.LowestPower then
+                         Data.NormalPower = Data.NormalPower - 5
+                     elseif input.KeyCode == Enum.KeyCode.Z and Data.NormalPower == Data.MaxPower then
+                         Data.NormalPower = Data.NormalPower + 0
+                         warn("Max Power, Cannot Adjust Any Higher")
+                     elseif input.KeyCode == Enum.KeyCode.X and Data.NormalPower == Data.LowestPower then
+                         Data.NormalPower = Data.NormalPower - 0
+                         warn("Lowest Possible Power, Cannot Adjust Any Lower")
+                     end
+                 end
+             end
+         )
+        
+         local function isVector3Valid(vec3)
+             return not (vec3.X ~= vec3.X or vec3.Y ~= vec3.Y or vec3.Z ~= vec3.Z)
+         end
+        
+         local ThrowingTab = {
+             Direction = Vector3.new(0, 0, 0)
+         }
+         game:GetService("UserInputService").InputBegan:Connect(
+             function(input, gameProcessedEvent)
+                 if game.PlaceId ~= 8206123457 then
+                     if
+                         input.UserInputType == Enum.UserInputType.MouseButton1 and
+                             game:GetService("Players").LocalPlayer.PlayerGui.MainGui.Message.Text == "HIKE" and
+                             game:GetService("ReplicatedStorage").Values.Status.Value == "InPlay" and
+                             game:GetService("ReplicatedStorage").Values.Throwable and
+                             not gameProcessedEvent
+                     then
+                         if Char then
+                             local Football = Char:FindFirstChildOfClass("Tool")
+                             if Football then
+                                 if t == true then
+                                     if t == false then
+                                         return
+                                     end
+                                     local Players = game:GetService("Players")
+                                     local start = Player.Character:FindFirstChild("Head").Position
+                                     if not isLocked then
+                                         local nearestPlayer = getNearestPlayerToMouse()
+                                         if nearestPlayer and nearestPlayer:IsA("Player") then
+                                             ClosestPlr = nearestPlayer
+                                         end
+                                     end
+        
+                                     if isLocked and not ClosestPlr then
+                                         if getNearestPlayerToMouse() == nil then
+                                             ClosestPlr = ClosestPlr
+                                         else
+                                             ClosestPlr = getNearestPlayerToMouse()
+                                         end
+                                     end
+                                     local Initial = 95
+                                     local Throwtype = getThrowType()
+        
+                                     local WhichOne2
+                                     if Throwtype == "Fade" then
+                                         WhichOne2 = Data.FadeModeAngle
+                                     elseif Throwtype == "Bullet" then
+                                         WhichOne2 = Data.BulletModeAngle
+                                     else
+                                         WhichOne2 = Data.Angle
+                                     end
+                                     if AutoPower then
+                                         if Throwtype == "Fade" then
+                                             Initial = 95
+                                         else
+                                             Initial = 95
+                                         end
+                                     else
+                                         Initial = Data.NormalPower
+                                     end
+                                     local toLaunchAnlge
+                                     if AutoAngle then
+                                         if Throwtype == "Fade" then
+                                             toLaunchAnlge = math.rad(75)
+                                         elseif Throwtype == "Bullet" then
+                                             toLaunchAnlge =
+                                                 clampnum(
+                                                 HighSpeedLowAngleCalcs(FF2Grav, Initial),
+                                                 0,
+                                                 0.296706
+                                             )
+                                         else
+                                             toLaunchAnlge =
+                                                 clampnum(calculateLaunchAngle(FF2Grav, Initial), 0, 0.975)
+                                         end
+                                     else
+                                         toLaunchAnlge = math.rad(WhichOne2)
+                                     end
+                                     local TOF = GetTimeOfFlightProjectile(Initial, toLaunchAnlge, FF2Grav)
+                                     local YesEnd
+                                     if
+                                         string.find(ClosestPlr.name, "bot 1") or
+                                             string.find(ClosestPlr.name, "bot 3")
+                                     then
+                                         YesEnd =
+                                             KeepPosInBounds(BotEstimatedVel(TOF, ClosestPlr), 70.5, 175.5)
+                                     elseif
+                                         not string.find(ClosestPlr.name, "bot 1") or
+                                             not string.find(ClosestPlr.name, "bot 3")
+                                     then
+                                         YesEnd =
+                                             KeepPosInBounds(
+                                             GetTargetPositionForWR(TOF, ClosestPlr),
+                                             70.5,
+                                             175.5
+                                         )
+                                     end
+                                     local PowerSir
+                                     local vel, toThrowToDirection, pow =
+                                         OverallVelocityNeededToReachAPosition(
+                                         toLaunchAnlge,
+                                         start,
+                                         YesEnd,
+                                         Vector3.new(0, -FF2Grav, 0),
+                                         TOF
+                                     )
+                                     if AutoPower then
+                                         if Throwtype == "Fade" then
+                                             PowerSir = 95
+                                         elseif Throwtype == "Bullet" then
+                                             PowerSir = clampnum(pow, 90, 95)
+                                         else
+                                             PowerSir = pow
+                                         end
+                                     else
+                                         PowerSir = Data.NormalPower
+                                     end
+                                     local neworigin = start + (ThrowingTab.Direction * 5)
+                                     local throwingpar = Instance.new("Part")
+                                     throwingpar.Size = Vector3.new(2, 2, 2)
+                                     throwingpar.Color = Color3.fromRGB(255, 165, 0)
+        
+                                     local RemoteEvent = Football.Handle:FindFirstChild("RemoteEvent")
+                                     if RemoteEvent then
+                                         local ThrowAnimation =
+                                             Char.Humanoid:LoadAnimation(
+                                             game:GetService("ReplicatedStorage").Animations.Throw
+                                         )
+                                         ThrowAnimation.Name = "Throw"
+                                         ThrowAnimation:Play()
+                                         RemoteEvent:fireServer(
+                                             "Clicked",
+                                             start,
+                                             neworigin + ThrowingTab.Direction * 10000,
+                                             (game.PlaceId == 8206123457 and PowerSir) or 95,
+                                             PowerSir
+                                         )
+                                         throwingpar.Parent = workspace
+                                         throwingpar.Velocity = vel
+                                         wait(TOF)
+                                         throwingpar:Destroy()
+                                     else
+                                         warn("RemoteEvent not found on Football's Handle")
+                                     end
+                                 else
+                                 end
+                             else
+                             end
+                         else
+                         end
+                     end
+                 elseif game.PlaceId == 8206123457 then
+                     if input.UserInputType == Enum.UserInputType.MouseButton1 and not gameProcessedEvent then
+                         if Char then
+                             local Football = Char:FindFirstChildOfClass("Tool")
+                             if Football then
+                                 if t == true then
+                                     if t == false then
+                                         return
+                                     end
+                                     local start = Player.Character:FindFirstChild("Head").Position
+                                     if not isLocked then
+                                         local nearestPlayer = getNearestPlayerToMouse()
+                                         if nearestPlayer and nearestPlayer:IsA("Player") then
+                                             ClosestPlr = nearestPlayer
+                                         end
+                                     end
+        
+                                     if isLocked and not ClosestPlr then
+                                         if getNearestPlayerToMouse() == nil then
+                                             ClosestPlr = ClosestPlr
+                                         else
+                                             ClosestPlr = getNearestPlayerToMouse()
+                                         end
+                                     end
+                                     local Initial = 95
+                                     local Throwtype = getThrowType()
+        
+                                     local WhichOne2
+                                     if Throwtype == "Fade" then
+                                         WhichOne2 = Data.FadeModeAngle
+                                     elseif Throwtype == "Bullet" then
+                                         WhichOne2 = Data.BulletModeAngle
+                                     else
+                                         WhichOne2 = Data.Angle
+                                     end
+                                     if AutoPower then
+                                         if Throwtype == "Fade" then
+                                             Initial = 95
+                                         else
+                                             Initial = 95
+                                         end
+                                     else
+                                         Initial = Data.NormalPower
+                                     end
+                                     local toLaunchAnlge
+                                     if AutoAngle then
+                                         if Throwtype == "Fade" then
+                                             toLaunchAnlge = math.rad(75)
+                                         elseif Throwtype == "Bullet" then
+                                             toLaunchAnlge =
+                                                 clampnum(
+                                                 HighSpeedLowAngleCalcs(FF2Grav, Initial),
+                                                 0,
+                                                 0.296706
+                                             )
+                                         else
+                                             toLaunchAnlge =
+                                                 clampnum(calculateLaunchAngle(FF2Grav, Initial), 0, 0.975)
+                                         end
+                                     else
+                                         toLaunchAnlge = math.rad(WhichOne2)
+                                     end
+                                     local TOF = GetTimeOfFlightProjectile(Initial, toLaunchAnlge, FF2Grav)
+                                     local YesEnd
+                                     if
+                                         string.find(ClosestPlr.name, "bot 1") or
+                                             string.find(ClosestPlr.name, "bot 3")
+                                     then
+                                         YesEnd = BotEstimatedVel(TOF, ClosestPlr)
+                                     elseif
+                                         not string.find(ClosestPlr.name, "bot 1") or
+                                             not string.find(ClosestPlr.name, "bot 3")
+                                     then
+                                         YesEnd = GetTargetPositionForWR(TOF, ClosestPlr)
+                                     end
+                                     local PowerSir
+                                     local vel, toThrowToDirection, pow =
+                                         OverallVelocityNeededToReachAPosition(
+                                         toLaunchAnlge,
+                                         start,
+                                         YesEnd,
+                                         Vector3.new(0, -FF2Grav, 0),
+                                         TOF
+                                     )
+                                     if AutoPower then
+                                         if Throwtype == "Fade" then
+                                             PowerSir = 95
+                                         elseif Throwtype == "Bullet" then
+                                             PowerSir = clampnum(pow, 90, 95)
+                                         else
+                                             PowerSir = pow
+                                         end
+                                     else
+                                         PowerSir = Data.NormalPower
+                                     end
+                                     local neworigin = start + (ThrowingTab.Direction * 5)
+                                     local throwingpar = Instance.new("Part")
+                                     throwingpar.Size = Vector3.new(2, 2, 2)
+                                     throwingpar.Color = Color3.fromRGB(255, 165, 0)
+        
+                                     local RemoteEvent = Football.Handle:FindFirstChild("RemoteEvent")
+                                     if RemoteEvent then
+                                         local ThrowAnimation =
+                                             Char.Humanoid:LoadAnimation(
+                                             game:GetService("ReplicatedStorage").Animations.Throw
+                                         )
+                                         ThrowAnimation.Name = "Throw"
+                                         ThrowAnimation:Play()
+                                         RemoteEvent:fireServer(
+                                             "Clicked",
+                                             start,
+                                             neworigin + ThrowingTab.Direction * 10000,
+                                             (game.PlaceId == 8206123457 and PowerSir) or 95,
+                                             PowerSir
+                                         )
+                                         throwingpar.Parent = workspace
+                                         throwingpar.Velocity = vel
+                                         wait(TOF)
+                                         throwingpar:Destroy()
+                                     else
+                                         warn("RemoteEvent not found on Football's Handle")
+                                     end
+                                 else
+                                 end
+                             else
+                             end
+                         else
+                         end
+                     end
+                 end
+             end
+         )
+        
+         local TargetPosition
+         local PredictedRoute
+        
+         Char.ChildAdded:Connect(
+             function(v)
+                 if v.Name == "Football" and Char then
+                     local children = v:GetChildren()
+                     if children.Name == "Handle" then
+                         local descendants = children:GetChildren()
+                         if descendants.Name == "LocalScript" then
+                             descendants:Destroy()
+                         end
+                     end
+                 end
+             end
+         )
+        
+         task.spawn(
+             function()
+                 game:GetService("RunService").Heartbeat:Connect(
+                     function()
+                         task.wait()
+        
+                         if not isLocked then
+                             ClosestPlr = getNearestPlayerToMouse()
+                         end
+        
+                         local PredictedRoute
+        
+                         task.wait()
+        
+                         if
+                             t and Player.Character and Player.Character:FindFirstChild("Football") and
+                                 ClosestPlr
+                         then
+                             trace.Visible = false
+                             local Throwtype = getThrowType()
+
+                             Highlight.Enabled = true
+                             Highlight.OutlineTransparency = 0
+                             Highlight.FillColor = Color3.new(62 / 255, 134 / 255, 222 / 255)
+                             Highlight.FillTransparency = 0.5 
+                             Highlight.OutlineColor = Color3.new(255 / 255, 255 / 255, 255 / 255)
+                             
+                             if
+                                 not string.find(ClosestPlr.Name, "bot 1") and
+                                     not string.find(ClosestPlr.Name, "bot 3")
+                             then
+                                 PredictedRoute = CalculateRouteofPlayer(ClosestPlr)
+                             elseif
+                                 string.find(ClosestPlr.Name, "bot 1") or
+                                     string.find(ClosestPlr.Name, "bot 3")
+                             then
+                                 PredictedRoute = "Straight"
+                             end
+        
+                             if
+                                 not string.find(ClosestPlr.Name, "bot 1") and
+                                     not string.find(ClosestPlr.Name, "bot 3")
+                             then
+                                 if ClosestPlr.Character:FindFirstChild("HumanoidRootPart") then
+                                     Highlight.Parent = ClosestPlr.Character
+                                 end
+                             elseif
+                                 string.find(ClosestPlr.Name, "bot 1") or
+                                     string.find(ClosestPlr.Name, "bot 3")
+                             then
+                                 Highlight.Parent = ClosestPlr
+                             end
+                             ScreenGui.Enabled = true
+        
+                             local WhichOne
+                             if Throwtype == "Fade" then
+                                 WhichOne = Data.FadeModeAngle
+                             elseif Throwtype == "Bullet" then
+                                 WhichOne = Data.BulletModeAngle
+                             else
+                                 WhichOne = Data.Angle
+                             end
+        
+                             local FF2Grav = 28
+                             local Start = Player.Character:FindFirstChild("Head").Position
+                             local Initial
+                             local LaunchAngle
+        
+                             if AutoPower then
+                                 Initial = 95
+                             else
+                                 Initial = Data.NormalPower
+                             end
+        
+                             if AutoAngle then
+                                 if Throwtype == "Fade" then
+                                     LaunchAngle = math.rad(75)
+                                 elseif Throwtype == "Bullet" then
+                                     LaunchAngle =
+                                         clampnum(HighSpeedLowAngleCalcs(FF2Grav, Initial), 0, 0.296706)
+                                 else
+                                     LaunchAngle = clampnum(calculateLaunchAngle(FF2Grav, Initial), 0, 0.975)
+                                 end
+                             else
+                                 LaunchAngle = math.rad(WhichOne)
+                             end
+        
+                             local TOF = GetTimeOfFlightProjectile(Initial, LaunchAngle, FF2Grav)
+                             local TargetPosition
+        
+                             if
+                                 (string.find(ClosestPlr.Name, "bot 1") or
+                                     string.find(ClosestPlr.Name, "bot 3"))
+                             then
+                                 if game.PlaceId == 8206123457 then
+                                     TargetPosition = BotEstimatedVel(TOF, ClosestPlr)
+                                 elseif game.PlaceId ~= 8206123457 then
+                                     TargetPosition =
+                                         KeepPosInBounds(BotEstimatedVel(TOF, ClosestPlr), 70.5, 175.5)
+                                 end
+                             else
+                                 if game.PlaceId == 8206123457 then
+                                     TargetPosition = GetTargetPositionForWR(TOF, ClosestPlr)
+                                 elseif game.PlaceId ~= 8206123457 then
+                                     TargetPosition =
+                                         KeepPosInBounds(
+                                         GetTargetPositionForWR(TOF, ClosestPlr),
+                                         70.5,
+                                         175.5
+                                     )
+                                 end
+                             end
+        
+                             local POWAA
+        
+                             local velocity, direction, power =
+                                 OverallVelocityNeededToReachAPosition(
+                                 LaunchAngle,
+                                 Start,
+                                 TargetPosition,
+                                 Vector3.new(0, -FF2Grav, 0),
+                                 TOF
+                             )
+                             Initial = power
+                             if AutoPower then
+                                 if Throwtype == "Fade" then
+                                     POWAA = 95
+                                 elseif Throwtype == "Bullet" then
+                                     POWAA = clampnum(power, 90, 95)
+                                 else
+                                     POWAA = power
+                                 end
+                             else
+                                 POWAA = Data.NormalPower
+                             end
+                             if isVector3Valid(direction) and isVector3Valid(TargetPosition) then
+                                 ThrowingTab.Direction = direction
+        
+                                 local startAdjusted = Start + (ThrowingTab.Direction * 5)
+        
+                                 local curve0, curve1, cf0, cf1 =
+                                     beamProjectile(
+                                     Vector3.new(0, -FF2Grav, 0),
+                                     POWAA * direction,
+                                     Start + (direction * 5),
+                                     TOF
+                                 )
+        
+                                 beam.CurveSize0 = curve0
+                                 beam.CurveSize1 = curve1
+                                 beam.Attachment0.CFrame = beam.Attachment0.Parent.CFrame:inverse() * cf0
+                                 beam.Attachment1.CFrame = beam.Attachment1.Parent.CFrame:inverse() * cf1
+                                 beam.Width0 = 0.5
+                                 beam.Width1 = 0.5
+        
+                                 local sum = (beam.Attachment1.CFrame - beam.Attachment1.Position):Inverse()
+                                 VisPart.CFrame =
+                                     beam.Attachment1.CFrame * sum * CFrame.Angles(math.rad(0), 0, 0)
+        
+                                 local CamPo, OnScren = isVisandPos(VisPart.Position)
+                                 local CamPo2, OnS = isVisandPos(beam.Attachment0.Position)
+                                 if OnScren and OnS then
+                                     trace.From = Vector2.new(CamPo2.X, CamPo2.Y)
+                                     trace.To = Vector2.new(CamPo.X, CamPo.Y)
+                                 end
+                                 Playerrr.Text = ClosestPlr.Name
+                                 PowerNumber.Text = tostring(POWAA)
+        
+                                 if PredictedRoute then
+                                     RouteOK.Text = PredictedRoute
+                                 end
+        
+                                 if
+                                     not (string.find(ClosestPlr.Name, "bot 1") or
+                                         string.find(ClosestPlr.Name, "bot 3"))
+                                 then
+                                     local ClosestCB = getPeopleGuardingClosestToMouse(ClosestPlr)
+                                     if Interceptable(ClosestCB, VisPart.Position, TOF) then
+                                         Intable.Text = "Yes"
+                                     else
+                                         Intable.Text = "No"
+                                     end
+                                 elseif
+                                     string.find(ClosestPlr.Name, "bot 1") or
+                                         string.find(ClosestPlr.Name, "bot 3")
+                                 then
+                                     local BotCbClosest = getClosestCBtoBot(ClosestPlr)
+                                     if botInterceptable(BotCbClosest, VisPart.Position, TOF) then
+                                         Intable.Text = "Yes"
+                                     else
+                                         Intable.Text = "No"
+                                     end
+                                 end
+        
+                                 if
+                                     not (string.find(ClosestPlr.Name, "bot 1") or
+                                         string.find(ClosestPlr.Name, "bot 3"))
+                                 then
+                                     local ClosestWRR = getNearestPlayerToMouse()
+                                     if CatchAble(ClosestWRR, VisPart.Position, TOF) then
+                                         Intable_2.Text = "Yes"
+                                     else
+                                         Intable_2.Text = "No"
+                                     end
+                                 elseif
+                                     string.find(ClosestPlr.Name, "bot 1") or
+                                         string.find(ClosestPlr.Name, "bot 3")
+                                 then
+                                     local BotCbWr = getNearestPlayerToMouse()
+                                     if botCatchAble(BotCbWr, VisPart.Position, TOF) then
+                                         Intable_2.Text = "Yes"
+                                     else
+                                         Intable_2.Text = "No"
+                                     end
+                                 end
+        
+                                 AirTimeTEXT.Text = tostring(RoundNumToHundredths(TOF)) .. "s"
+        
+                                 if AutoAngle then
+                                     if Throwtype == "Fade" then
+                                         AngleNumber.Text = "75"
+                                     else
+                                         AngleNumber.Text =
+                                             tostring(RoundNumToHundredths(math.deg(LaunchAngle)))
+                                     end
+                                 else
+                                     AngleNumber.Text = tostring(WhichOne)
+                                 end
+                             end
+                         else
+                             ScreenGui.Enabled = false
+                             Highlight.Enabled = false
+                             trace.Visible = false
+        
+                             
+                         end
+                     end
+                 )
+             end
+         )
+        
+         task.spawn(
+             function()
+                 while t == false do
+                     task.wait()
+                     ScreenGui.Enabled = false
+                     beam.Width0 = 0
+                     beam.Width1 = 0
+                 end
+             end
+         )
+        else
+         ScreenGui.Enabled = false
+        end
+    end,
+})
+
+t3:Toggle("Auto Angle", {
+    Default = false,
+    Callback = function(value)
+        AutoAngle = value
+    end,
+})
+
+
+t3:Toggle("Auto Power", {
+    Default = false,
+    Callback = function(value)
+        AutoPower = value
+    end,
+})
+
+local isRunning = false
+local accuracy = 0.04
+local power = 95.61
+local minAccuracy = 0.04
+local maxAccuracy = 1
+local minPower = 0 
+local maxPower = 95.61
+local eventCheckInterval = 0.2
+local isBallPresent = false
+local remoteEvent = nil
+
+local function getRemoteEvent()
+    local kickerBall = workspace:FindFirstChild("KickerBall")
+    if kickerBall and kickerBall:FindFirstChild("RemoteEvent") then
+        return kickerBall.RemoteEvent
+    end
+    return nil
+end
+
+local function calculateDynamicAccuracy(baseAccuracy, adjustFactor)
+    return math.clamp(baseAccuracy * adjustFactor, minAccuracy, maxAccuracy)
+end
+
+local function fireRemoteEvent()
+    if isBallPresent and remoteEvent then
+        local args = {
+            [1] = "KickData",
+            [2] = 46,
+            [3] = power,
+            [4] = accuracy,
+            [5] = false
+        }
+        remoteEvent:FireServer(unpack(args))
+    else
+        print("Ball not present or remote event not found.")
+    end
+end
+
+local function executeLoop()
+    while isRunning do
+        remoteEvent = getRemoteEvent()
+        isBallPresent = remoteEvent ~= nil
+
+        if isBallPresent then
+            fireRemoteEvent()
+        end
+
+        wait(eventCheckInterval)
+    end
+end
+
+t6:Toggle("Auto Kick", {
+    Default = false,
+    Callback = function(value)
+        isRunning = value
+        if value then
+            task.spawn(executeLoop)
+    end
+    end,
+})
+
+t6:Slider("Accuracy", {
+    Min = 0,
+    Max = 98,
+    Default = 0,
+    Callback = function(value)
+        local scale = ((100 - value) / 99)
+        accuracy = calculateDynamicAccuracy(minAccuracy, scale)
+    end
+})
+
+t6:Slider("Power", {
+    Min = minPower,
+    Max = maxPower,
+    Default = 0,
+    Callback = function(value)
+        power = value
+    end
+})
+LocalPlayer:GetMouse().Button1Down:Connect(function()
+    if FakeCatchLeft then
+        FakeCatchLeft:Destroy()
+    end
+    if FakeCatchRight then
+        FakeCatchRight:Destroy()
+    end
+end)
