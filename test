@@ -1,4 +1,5 @@
 
+local Tyrant = {}
 
 local RS = game:GetService("RunService")
 local TS = game:GetService("TweenService")
